@@ -1,374 +1,176 @@
 <!doctype html>
 <html lang="id">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Hujan Interaktif — Demo</title>
-
-<!-- anime.js CDN -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" defer></script>
-
-<style>
-  :root{
-    --sun-size:120px;
-    --cloud-color: rgba(255,255,255,0.92);
-    --cloud-shadow: rgba(0,0,0,0.08);
-  }
-  html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto;}
-  body{
-    overflow:hidden;
-    background: linear-gradient(180deg,#1f2b3a 0%, #2b3b4a 60%, #0b1220 100%);
-    transition: background 1s linear;
-  }
-
-  /* container */
-  #stage{position:relative;width:100vw;height:100vh;touch-action:none;user-select:none;}
-
-  /* sun/moon */
-  .orb{
-    position:absolute;
-    width:var(--sun-size);
-    height:var(--sun-size);
-    border-radius:50%;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.25), inset 0 -10px 30px rgba(255,255,255,0.06);
-    pointer-events:none;
-    transform: translate(-50%,-50%);
-    z-index:6;
-  }
-  .sun{
-    background: radial-gradient(circle at 30% 30%, #fff7c2 0%, #ffd86b 30%, #ffb347 60%, #ff8c00 100%);
-    filter: drop-shadow(0 10px 30px rgba(255,160,50,0.25));
-  }
-  .moon{
-    background: radial-gradient(circle at 30% 30%, #ffffff 0%, #dfe9f3 30%, #b8c6db 60%, #9aa9c2 100%);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-    mix-blend-mode: screen;
-    filter: blur(0.2px);
-  }
-
-  /* clouds */
-  .cloud{
-    position:absolute;
-    top:10%;
-    left:10%;
-    width:360px;
-    height:120px;
-    pointer-events:none;
-    z-index:5;
-    filter: drop-shadow(0 10px 30px var(--cloud-shadow));
-  }
-  .cloud svg{width:100%;height:100%;}
-  .cloud-group{position:absolute;will-change:transform;pointer-events:auto;}
-
-  /* canvas layers */
-  canvas{position:absolute;left:0;top:0;z-index:1;display:block;}
-  #rainCanvas{z-index:2;pointer-events:none;}
-  #interactionCanvas{z-index:4;pointer-events:none;}
-
-  /* UI hint */
-  .hint{
-    position: absolute;
-    left: 16px;
-    bottom: 16px;
-    color: rgba(255,255,255,0.85);
-    font-size:13px;
-    z-index:10;
-    background: rgba(0,0,0,0.25);
-    padding:8px 12px;border-radius:8px;
-    backdrop-filter: blur(6px);
-  }
-
-  /* responsive */
-  @media (max-width:600px){
-    :root{--sun-size:88px;}
-    .cloud{width:260px;height:90px;}
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arsip yang Berpendar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,500;1,500&display=swap" rel="stylesheet">
+  <style>
+    :root { --ink:#332521; --cream:#fff6df; --gold:#f6c768; --wine:#4e2931; --blue:#4f4d82; }
+    * { box-sizing:border-box; }
+    html,body { width:100%; height:100%; overflow:hidden; }
+    body { margin:0; color:var(--ink); font-family:'DM Mono',monospace; background:#a46147; }
+    body::before { content:''; position:fixed; inset:0; z-index:10; pointer-events:none; opacity:.13; mix-blend-mode:multiply; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='.7'/%3E%3C/svg%3E"); }
+    .page { position:relative; height:100dvh; min-height:560px; overflow:hidden; background:linear-gradient(105deg,#d5a471 0%,#ebc083 34%,#aa6049 70%,#542e37 100%); }
+    .page::before { content:''; position:absolute; inset:0; opacity:.3; background:repeating-linear-gradient(0deg,transparent 0 39px,rgba(69,43,34,.13) 40px 41px),linear-gradient(120deg,transparent 10%,rgba(255,239,182,.23) 42%,transparent 59%); }
+    .sunbeam { position:absolute; z-index:0; width:78vw; height:78vw; max-width:1000px; max-height:1000px; top:-51%; left:-17%; border-radius:50%; pointer-events:none; background:radial-gradient(circle,rgba(255,248,196,.86),rgba(255,186,76,.25) 42%,transparent 69%); filter:blur(10px); mix-blend-mode:screen; }
+    .ray { position:absolute; z-index:0; top:-35%; left:15%; width:37%; height:180%; pointer-events:none; transform:rotate(25deg); background:linear-gradient(90deg,transparent 5%,rgba(255,237,169,.07) 30%,rgba(255,224,143,.27) 50%,transparent 77%); filter:blur(13px); mix-blend-mode:screen; }
+    .topbar { position:relative; z-index:5; height:68px; padding:23px 4.5vw; display:flex; justify-content:space-between; color:var(--cream); font-size:10px; letter-spacing:.14em; text-transform:uppercase; }
+    .brand { display:flex; align-items:center; gap:10px; }
+    .brand i { width:8px; height:8px; display:block; border-radius:50%; background:var(--gold); box-shadow:0 0 18px var(--gold); }
+    .date { opacity:.75; }
+    .desk { position:absolute; z-index:1; inset:68px 0 93px; }
+    .desk-item { position:absolute; box-shadow:20px 24px 30px rgba(52,24,20,.32); }
+    .music-sheet { z-index:2; width:67%; height:88%; right:-8%; top:-3%; padding:34px 8%; overflow:hidden; transform:rotate(2deg); box-shadow:17px 25px 34px rgba(52,24,20,.25); background:#f4edda; background-image:linear-gradient(90deg,transparent 0 9%,rgba(167,81,62,.22) 9.2% 9.5%,transparent 9.7%),repeating-linear-gradient(0deg,transparent 0 28px,rgba(60,53,55,.14) 29px 30px); }
+    .music-sheet::before { content:'♫  ♩   ♪   ♫'; position:absolute; top:23%; left:17%; color:#40363d; font:clamp(28px,4vw,61px) 'Playfair Display',serif; letter-spacing:.19em; opacity:.85; }
+    .music-sheet::after { content:'diary / 28 may 2023     tempo / memory'; position:absolute; right:9%; bottom:10%; color:#776d6a; font-size:10px; transform:rotate(-90deg); }
+    .blue-strip { z-index:3; width:9%; height:65%; right:18%; top:17%; transform:rotate(1deg); background:rgba(65,63,128,.85); mix-blend-mode:multiply; }
+    .page-fragment { z-index:4; width:18%; height:29%; left:8%; top:3%; padding:17px; transform:rotate(-8deg); color:#513b2d; background:#dfb361; font:18px/1.1 'Playfair Display',serif; }
+    .page-fragment small { font:9px/1.6 'DM Mono',monospace; }
+    .lace { z-index:1; width:27%; height:25%; left:-2%; bottom:3%; opacity:.55; background:radial-gradient(ellipse at center,transparent 35%,#f6e9ce 36% 39%,transparent 40% 50%,#f6e9ce 51% 54%,transparent 55%); transform:rotate(-12deg); }
+    .polaroid { z-index:5; padding:12px 12px 39px; background:#f8f2e3; overflow:hidden; cursor:pointer; transition:filter .3s,box-shadow .3s; }
+    .polaroid:hover { z-index:30; filter:brightness(1.12); box-shadow:28px 35px 42px rgba(52,24,20,.48); }
+    .photo-a:hover { transform:translateY(-18px) scale(1.08) rotate(-11deg); }
+    .photo-b:hover { transform:translateY(-18px) scale(1.08) rotate(7deg); }
+    .photo-c:hover { transform:translateY(-18px) scale(1.08) rotate(-7deg); }
+    .photo-d:hover { transform:translateY(-18px) scale(1.08) rotate(14deg); }
+    .photo-e:hover { transform:translateY(-18px) scale(1.08) rotate(-4deg); }
+    .photo-f:hover { transform:translateY(-18px) scale(1.08) rotate(9deg); }
+    .photo-g:hover { transform:translateY(-18px) scale(1.08) rotate(-14deg); }
+    .polaroid img { display:block; width:100%; height:100%; object-fit:cover; filter:saturate(.75) sepia(.2) contrast(.95); }
+    .polaroid::after { content:'NO. 01 / FOUND'; position:absolute; bottom:13px; left:14px; color:#66584d; font-size:8px; }
+    .photo-a { width:22%; height:51%; left:17%; top:22%; transform:rotate(-11deg); }
+    .photo-b { width:25%; height:54%; left:37%; bottom:3%; transform:rotate(7deg); }
+    .photo-c { width:17%; height:37%; right:31%; top:31%; transform:rotate(-7deg); }
+    .photo-d { width:16%; height:35%; left:2%; top:32%; z-index:4; transform:rotate(14deg); }
+    .photo-e { width:18%; height:39%; left:29%; top:7%; z-index:4; transform:rotate(-4deg); }
+    .photo-f { width:16%; height:34%; right:19%; bottom:4%; z-index:6; transform:rotate(9deg); }
+    .photo-g { width:15%; height:32%; right:5%; top:39%; z-index:6; transform:rotate(-14deg); }
+    .paper-note { z-index:6; width:15%; height:22%; right:6%; top:2%; padding:14px; transform:rotate(10deg); background:rgba(255,248,225,.6); font-size:9px; line-height:1.8; }
+    .paper-note b { display:block; margin-bottom:6px; font:italic 20px 'Playfair Display',serif; }
+    .title { position:absolute; z-index:7; left:5vw; top:23%; color:var(--cream); pointer-events:none; }
+    .kicker { margin:0 0 18px; color:#ffe09a; font-size:10px; letter-spacing:.18em; text-transform:uppercase; }
+    h1 { margin:0; font:500 clamp(3.2rem,7vw,7.5rem)/.88 'Playfair Display',serif; letter-spacing:-.03em; }
+    h1 em { color:#ffe095; }
+    .subtitle { width:300px; margin-top:25px; color:rgba(255,246,223,.78); font-size:11px; line-height:1.8; }
+    .songs { position:absolute; z-index:8; left:0; right:0; bottom:0; height:102px; padding:13px 4.5vw 12px; color:var(--cream); background:rgba(47,26,29,.58); backdrop-filter:blur(14px); border-top:1px solid rgba(255,231,168,.3); }
+    .songs-head { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; margin-bottom:10px; font-size:9px; letter-spacing:.16em; text-transform:uppercase; }
+    .songs-head span:first-child { display:flex; align-items:center; gap:8px; }
+    .songs-head span:first-child::before { content:'♫'; color:var(--gold); font-size:14px; }
+    .songs-head span:last-child { justify-self:end; max-width:42%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; opacity:.62; font-size:8px; letter-spacing:.04em; text-transform:none; }
+    .volume-control { display:flex; align-items:center; gap:8px; color:rgba(255,246,223,.72); font-size:13px; letter-spacing:0; text-transform:none; }
+    .volume-control input { width:105px; height:3px; accent-color:var(--gold); cursor:pointer; }
+    .bubbles { display:flex; gap:10px; height:48px; }
+    .song { position:relative; min-width:0; flex:1; display:flex; flex-direction:column; justify-content:center; border:1px solid rgba(255,245,217,.35); border-radius:999px; padding:7px 14px 7px 32px; color:var(--cream); background:rgba(255,247,220,.08); cursor:pointer; text-align:left; font:9px 'DM Mono',monospace; transition:background .25s,transform .25s,border-color .25s,box-shadow .25s; }
+    .song::before { content:attr(data-index); position:absolute; left:12px; top:50%; display:grid; place-items:center; width:13px; height:13px; border:1px solid rgba(255,245,217,.38); border-radius:50%; transform:translateY(-50%); color:rgba(255,246,223,.65); font-size:7px; }
+    .song.active::before { content:'▶'; border-color:var(--gold); color:var(--gold); font-size:6px; }
+    .song:hover,.song.active { border-color:var(--gold); background:rgba(255,212,116,.22); transform:translateY(-3px); box-shadow:0 7px 20px rgba(38,17,18,.18); }
+    .song strong,.song small { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .song strong { font-size:10px; font-weight:500; }
+    .song small { margin-top:3px; opacity:.68; font-size:8px; }
+    .visualizer { position:absolute; z-index:7; left:4.5vw; right:4.5vw; bottom:100px; height:52px; pointer-events:none; opacity:0; transition:opacity .4s; }
+    .visualizer.playing { opacity:.9; }
+    #wave { width:100%; height:100%; }
+    @media (max-width:700px) {
+      .page { min-height:480px; }
+      .topbar { padding:18px 5vw; height:55px; }
+      .desk { inset:55px 0 100px; transform:scale(1.25); transform-origin:47% 45%; }
+      .title { top:18%; left:7vw; }
+      h1 { font-size:clamp(3.3rem,15vw,5.5rem); }
+      .subtitle { width:220px; font-size:9px; }
+      .music-sheet { width:72%; right:-20%; }
+      .photo-a { width:29%; left:8%; }
+      .photo-b { width:35%; left:29%; }
+      .photo-c { width:22%; right:24%; }
+      .photo-d { width:23%; left:-2%; }
+      .photo-e { width:24%; left:24%; }
+      .photo-f { width:22%; right:15%; }
+      .photo-g { width:21%; right:0; }
+      .page-fragment { width:23%; left:0; }
+      .paper-note { width:21%; right:3%; }
+      .songs { height:100px; padding:12px 4vw 10px; }
+      .volume-control input { width:70px; }
+      .bubbles { gap:5px; }
+      .song { padding:6px 9px; }
+      .song strong { font-size:8px; }
+      .song small { font-size:7px; }
+      .visualizer { bottom:108px; left:3vw; right:3vw; }
+    }
+  </style>
 </head>
 <body>
-<div id="stage">
-  <canvas id="bgCanvas"></canvas>
-  <canvas id="rainCanvas"></canvas>
-  <canvas id="interactionCanvas"></canvas>
-
-  <!-- Sun / Moon -->
-  <div id="orb" class="orb sun" aria-hidden="true"></div>
-
-  <!-- Clouds (3 groups) -->
-  <div id="clouds">
-    <div class="cloud cloud-group" id="cloud1" style="left:5%;top:12%;transform:scale(0.9);">
-      <svg viewBox="0 0 640 200" preserveAspectRatio="xMidYMid meet">
-        <g fill="var(--cloud-color)">
-          <ellipse cx="160" cy="100" rx="160" ry="70"></ellipse>
-          <ellipse cx="320" cy="80" rx="120" ry="60"></ellipse>
-          <ellipse cx="480" cy="100" rx="140" ry="70"></ellipse>
-        </g>
-      </svg>
-    </div>
-
-    <div class="cloud cloud-group" id="cloud2" style="left:30%;top:6%;transform:scale(0.8);">
-      <svg viewBox="0 0 640 200" preserveAspectRatio="xMidYMid meet">
-        <g fill="var(--cloud-color)">
-          <ellipse cx="140" cy="100" rx="140" ry="60"></ellipse>
-          <ellipse cx="300" cy="80" rx="110" ry="50"></ellipse>
-          <ellipse cx="420" cy="110" rx="150" ry="70"></ellipse>
-        </g>
-      </svg>
-    </div>
-
-    <div class="cloud cloud-group" id="cloud3" style="left:62%;top:18%;transform:scale(1.05);">
-      <svg viewBox="0 0 640 200" preserveAspectRatio="xMidYMid meet">
-        <g fill="var(--cloud-color)">
-          <ellipse cx="160" cy="100" rx="160" ry="70"></ellipse>
-          <ellipse cx="320" cy="80" rx="120" ry="60"></ellipse>
-          <ellipse cx="480" cy="100" rx="140" ry="70"></ellipse>
-        </g>
-      </svg>
-    </div>
-  </div>
-
-  <div class="hint">Gerakkan kursor: pisahkan hujan & sentuh awan untuk efek asap</div>
-</div>
-
-<script>
-/* ---------- Setup canvases ---------- */
-const stage = document.getElementById('stage');
-const bgCanvas = document.getElementById('bgCanvas');
-const rainCanvas = document.getElementById('rainCanvas');
-const interCanvas = document.getElementById('interactionCanvas');
-const orb = document.getElementById('orb');
-const clouds = Array.from(document.querySelectorAll('.cloud-group'));
-
-function resizeAll(){
-  const w = window.innerWidth, h = window.innerHeight;
-  [bgCanvas, rainCanvas, interCanvas].forEach(c=>{
-    c.width = w; c.height = h; c.style.width = w+'px'; c.style.height = h+'px';
-  });
-}
-window.addEventListener('resize', resizeAll);
-resizeAll();
-
-/* ---------- Background gradient that changes with time ---------- */
-function setSkyByHour(hour){
-  // morning 5-11, day 11-15, evening 15-18, night 18-5
-  if(hour>=5 && hour<11){
-    document.body.style.background = 'linear-gradient(180deg,#ffdca8 0%, #cfe9ff 60%, #eaf6ff 100%)';
-    orb.className = 'orb sun';
-  } else if(hour>=11 && hour<15){
-    document.body.style.background = 'linear-gradient(180deg,#87CEEB 0%, #bfe9ff 60%, #fefefe 100%)';
-    orb.className = 'orb sun';
-  } else if(hour>=15 && hour<18){
-    document.body.style.background = 'linear-gradient(180deg,#ffb47b 0%, #ffd9a8 60%, #2b3b4a 100%)';
-    orb.className = 'orb sun';
-  } else {
-    document.body.style.background = 'linear-gradient(180deg,#0b1220 0%, #1b2a3a 60%, #07101a 100%)';
-    orb.className = 'orb moon';
-  }
-}
-
-/* ---------- Sun/Moon movement along an arc ---------- */
-function positionOrbByHour(hour){
-  // map hour (0-23) to angle along arc (sunrise ~ 6 -> left-bottom, noon -> top, sunset ~18 -> right-bottom)
-  const t = (hour + (new Date().getMinutes()/60)) / 24; // 0..1
-  // angle from 200deg to -20deg (in radians)
-  const start = 200 * Math.PI/180, end = -20 * Math.PI/180;
-  const ang = start + (end - start) * t;
-  const cx = window.innerWidth/2, cy = window.innerHeight*0.9, radius = Math.min(window.innerWidth, window.innerHeight)*0.45;
-  const x = cx + radius * Math.cos(ang);
-  const y = cy + radius * Math.sin(ang);
-  orb.style.left = x + 'px';
-  orb.style.top = y + 'px';
-  // subtle glow intensity by hour
-  const intensity = (hour>=6 && hour<18) ? 1 : 0.35;
-  orb.style.opacity = intensity;
-}
-
-/* ---------- Clouds gentle movement ---------- */
-clouds.forEach((c,i)=>{
-  const baseX = parseFloat(c.style.left) || 10;
-  anime({
-    targets: c,
-    translateX: [0, (i%2?40:-40)],
-    duration: 12000 + i*2000,
-    direction: 'alternate',
-    easing: 'easeInOutSine',
-    loop: true
-  });
-});
-
-/* ---------- Rain simulation (canvas) ---------- */
-const rCtx = rainCanvas.getContext('2d');
-let drops = [];
-function initRain(count=300){
-  drops = [];
-  for(let i=0;i<count;i++){
-    drops.push({
-      x: Math.random()*rainCanvas.width,
-      y: Math.random()*rainCanvas.height,
-      len: 10 + Math.random()*25,
-      speed: 2 + Math.random()*6,
-      thickness: 0.8 + Math.random()*1.6,
-      wind: -1 + Math.random()*2
-    });
-  }
-}
-initRain(380);
-
-function drawRain(){
-  rCtx.clearRect(0,0,rainCanvas.width,rainCanvas.height);
-  rCtx.strokeStyle = 'rgba(174,194,224,0.55)';
-  rCtx.lineWidth = 1;
-  rCtx.lineCap = 'round';
-  rCtx.beginPath();
-  for(let d of drops){
-    rCtx.moveTo(d.x, d.y);
-    rCtx.lineTo(d.x + d.wind*3, d.y + d.len);
-  }
-  rCtx.stroke();
-  updateRain();
-}
-function updateRain(){
-  for(let d of drops){
-    d.x += d.wind;
-    d.y += d.speed;
-    if(d.y > rainCanvas.height + 20){
-      d.y = -20 - Math.random()*100;
-      d.x = Math.random()*rainCanvas.width;
-    }
-    if(d.x < -50) d.x = rainCanvas.width + 50;
-    if(d.x > rainCanvas.width + 50) d.x = -50;
-  }
-}
-
-/* ---------- Interaction: cursor bubble that clears rain + smoke on cloud touch ---------- */
-const iCtx = interCanvas.getContext('2d');
-let mouse = {x:-9999,y:-9999,down:false};
-const bubbleRadius = 120;
-
-function drawInteraction(){
-  iCtx.clearRect(0,0,interCanvas.width,interCanvas.height);
-
-  // bubble: clear rain visually by drawing a radial gradient mask on top
-  const g = iCtx.createRadialGradient(mouse.x, mouse.y, bubbleRadius*0.1, mouse.x, mouse.y, bubbleRadius);
-  g.addColorStop(0, 'rgba(255,255,255,0.0)');
-  g.addColorStop(0.6, 'rgba(255,255,255,0.02)');
-  g.addColorStop(1, 'rgba(255,255,255,0.06)');
-  iCtx.fillStyle = g;
-  iCtx.beginPath();
-  iCtx.arc(mouse.x, mouse.y, bubbleRadius, 0, Math.PI*2);
-  iCtx.fill();
-
-  // draw subtle ripple line
-  iCtx.strokeStyle = 'rgba(255,255,255,0.08)';
-  iCtx.lineWidth = 1.2;
-  iCtx.beginPath();
-  iCtx.arc(mouse.x, mouse.y, bubbleRadius*0.9, 0, Math.PI*2);
-  iCtx.stroke();
-
-  // smoke particles handled separately
-  updateSmoke();
-}
-
-/* ---------- Smoke system when cursor touches cloud ---------- */
-let smokes = [];
-function spawnSmoke(x,y){
-  for(let i=0;i<8;i++){
-    smokes.push({
-      x: x + (Math.random()-0.5)*40,
-      y: y + (Math.random()-0.5)*20,
-      vx: (Math.random()-0.5)*0.6,
-      vy: -0.6 - Math.random()*1.2,
-      life: 60 + Math.random()*40,
-      size: 8 + Math.random()*18,
-      alpha: 0.9
-    });
-  }
-}
-function updateSmoke(){
-  for(let i=smokes.length-1;i>=0;i--){
-    const s = smokes[i];
-    s.x += s.vx;
-    s.y += s.vy;
-    s.life--;
-    s.alpha *= 0.995;
-    iCtx.fillStyle = `rgba(220,220,220,${Math.max(0, s.alpha*0.6)})`;
-    iCtx.beginPath();
-    iCtx.ellipse(s.x, s.y, s.size, s.size*0.6, 0, 0, Math.PI*2);
-    iCtx.fill();
-    if(s.life<=0 || s.alpha<0.02) smokes.splice(i,1);
-  }
-}
-
-/* ---------- Detect cursor touching cloud bounding boxes ---------- */
-function checkCloudTouches(){
-  clouds.forEach(c=>{
-    const rect = c.getBoundingClientRect();
-    // expand rect a bit
-    const pad = 20;
-    if(mouse.x >= rect.left - pad && mouse.x <= rect.right + pad &&
-       mouse.y >= rect.top - pad && mouse.y <= rect.bottom + pad){
-      // spawn smoke occasionally
-      if(Math.random() < 0.12) spawnSmoke(mouse.x, mouse.y + 10);
-      // subtle cloud wobble
-      anime({
-        targets: c,
-        translateY: [-2,2],
-        duration: 600,
-        direction: 'alternate',
-        easing: 'easeOutSine'
+  <main class="page">
+    <div class="sunbeam" aria-hidden="true"></div><div class="ray" aria-hidden="true"></div>
+    <header class="topbar"><div class="brand"><i></i> arsip pribadi / 24</div><div class="date">cahaya sore, 17:42</div></header>
+    <section class="desk" aria-label="Kolase kenangan">
+      <div class="desk-item music-sheet"></div><div class="desk-item blue-strip"></div>
+      <div class="desk-item page-fragment">Fock — Wolfs glissant<br><br><small>beberapa kata lama menunggu disentuh cahaya</small></div>
+      <div class="desk-item lace"></div><div class="desk-item paper-note"><b>hari ini</b>yang tersisa adalah bayangan dan nada.</div>
+      <div class="desk-item polaroid photo-a" data-tilt="-11"><img src="photos/IMG_20230528_060227.jpg" alt="Foto personal dari arsip pagi"></div>
+      <div class="desk-item polaroid photo-b" data-tilt="7"><img src="photos/IMG_20230528_060823.jpg" alt="Foto personal dari arsip perjalanan"></div>
+      <div class="desk-item polaroid photo-c" data-tilt="-7"><img src="photos/IMG_20230528_061601.jpg" alt="Foto personal dari arsip pagi"></div>
+      <div class="desk-item polaroid photo-d" data-tilt="14"><img src="photos/00000IMG_00000_BURST20230528060322882_COVER.jpg" alt="Foto personal dari arsip pagi"></div>
+      <div class="desk-item polaroid photo-e" data-tilt="-4"><img src="photos/IMG_20230528_062551.jpg" alt="Foto personal dari arsip pagi"></div>
+      <div class="desk-item polaroid photo-f" data-tilt="9"><img src="photos/IMG_20230528_063447.jpg" alt="Foto personal dari arsip pagi"></div>
+      <div class="desk-item polaroid photo-g" data-tilt="-14"><img src="photos/IMG_20230528_170702.jpg" alt="Foto personal dari arsip sore"></div>
+    </section>
+    <section class="title"><p class="kicker">catatan visual — cahaya sore</p><h1>Yang kecil<br>menjadi <em>abadi.</em></h1><p class="subtitle">Sebuah meja, beberapa potongan masa lalu, dan cahaya yang masih bergerak di atasnya.</p></section>
+    <div class="visualizer" id="visualizer"><canvas id="wave"></canvas></div>
+    <section class="songs" aria-label="Favourite song"><div class="songs-head"><span>Favourite song</span><label class="volume-control" aria-label="Volume audio">◖ <input id="volume" type="range" min="0" max="1" step="0.01" value="0.75" aria-label="Volume"></label><span id="status">pilih nada untuk memulai</span></div><div class="bubbles">
+      <button class="song" data-index="01" data-title="Touka reset" data-artist="Nekobolo/Sasanomaly" data-src="musics/Touka reset.mp3"><strong>Touka reset</strong><small>Nekobolo/Sasanomaly</small></button>
+      <button class="song" data-index="02" data-title="Floating candle" data-artist="Nekobolo/Sasanomaly" data-src="musics/Floating candle.mp3"><strong>Floating candle</strong><small>Nekobolo/Sasanomaly</small></button>
+      <button class="song" data-index="03" data-title="See you tomorrow" data-artist="Nekobolo/Sasanomaly" data-src="musics/See you tomorrow.mp3"><strong>See you tomorrow</strong><small>Nekobolo/Sasanomaly</small></button>
+      <button class="song" data-index="04" data-title="Spring flower" data-artist="Nekobolo/Sasanomaly" data-src="musics/Spring flower.mp3"><strong>Spring flower</strong><small>Nekobolo/Sasanomaly</small></button>
+      <button class="song" data-index="05" data-title="Umbrella" data-artist="Nekobolo/Sasanomaly" data-src="musics/Umbrella.mp3"><strong>Umbrella</strong><small>Nekobolo/Sasanomaly</small></button>
+    </div></section>
+  </main>
+  <audio id="audio" crossorigin="anonymous"></audio>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+  <script>
+    const songs = document.querySelectorAll('.song');
+    const audio = document.querySelector('#audio');
+    const visualizer = document.querySelector('#visualizer');
+    const canvas = document.querySelector('#wave');
+    const context = canvas.getContext('2d');
+    const status = document.querySelector('#status');
+    const volume = document.querySelector('#volume');
+    let audioContext, analyser, source, data;
+    let currentSong;
+    audio.volume = Number(volume.value);
+    const resize = () => { const ratio = window.devicePixelRatio || 1; canvas.width = canvas.clientWidth * ratio; canvas.height = canvas.clientHeight * ratio; context.setTransform(ratio,0,0,ratio,0,0); };
+    const drawWave = () => {
+      const width = canvas.clientWidth, height = canvas.clientHeight;
+      context.clearRect(0,0,width,height); context.beginPath(); context.lineWidth = 1.5; context.strokeStyle = 'rgba(255,224,149,.9)';
+      if (analyser) { analyser.getByteTimeDomainData(data); }
+      for (let x=0; x<width; x++) { const index = analyser ? Math.floor(x / width * data.length) : x; const input = analyser ? (data[index]-128)/128 : Math.sin(x*.08 + performance.now()*.003)*.16; const y = height/2 + input * height * .9; x ? context.lineTo(x,y) : context.moveTo(x,y); }
+      context.stroke(); requestAnimationFrame(drawWave);
+    };
+    const bounce = () => anime({ targets: '.polaroid, .music-sheet, .blue-strip, .page-fragment', translateY: () => anime.random(-3,3), duration:180, easing:'easeOutQuad' });
+    document.querySelectorAll('.polaroid').forEach((frame) => {
+      frame.addEventListener('pointerenter', () => {
+        document.querySelectorAll('.polaroid').forEach((item) => item.style.zIndex = '5');
+        frame.style.zIndex = '30';
+        anime({ targets: frame, scale: 1.08, translateY: -18, rotate: 0, duration: 420, easing: 'easeOutBack' });
       });
-    }
-  });
-}
-
-/* ---------- Mouse / touch handlers ---------- */
-window.addEventListener('mousemove', (e)=>{
-  mouse.x = e.clientX; mouse.y = e.clientY;
-});
-window.addEventListener('mouseleave', ()=>{ mouse.x = -9999; mouse.y = -9999; });
-window.addEventListener('touchmove', (e)=>{
-  const t = e.touches[0];
-  mouse.x = t.clientX; mouse.y = t.clientY;
-}, {passive:true});
-window.addEventListener('touchend', ()=>{ mouse.x = -9999; mouse.y = -9999; });
-
-/* ---------- Main loop ---------- */
-function loop(){
-  drawRain();
-  drawInteraction();
-  checkCloudTouches();
-  requestAnimationFrame(loop);
-}
-loop();
-
-/* ---------- Initialize sky & orb position based on local time ---------- */
-function refreshTimeBased(){
-  const now = new Date();
-  const hour = now.getHours();
-  setSkyByHour(hour);
-  positionOrbByHour(hour);
-}
-refreshTimeBased();
-setInterval(refreshTimeBased, 60*1000); // update tiap menit
-
-/* ---------- Small polish: parallax for orb on mouse move ---------- */
-window.addEventListener('mousemove', (e)=>{
-  const nx = (e.clientX / window.innerWidth - 0.5) * 20;
-  const ny = (e.clientY / window.innerHeight - 0.5) * 12;
-  orb.style.transform = `translate(-50%,-50%) translate(${nx}px, ${ny}px)`;
-});
-
-/* ---------- initial resize and rain density adapt ---------- */
-window.addEventListener('resize', ()=>{ initRain(Math.floor(window.innerWidth/3)); });
-initRain(Math.floor(window.innerWidth/3));
-
-/* ---------- Accessibility: reduce motion if user prefers ---------- */
-const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-if(mq.matches){
-  // reduce animations
-  anime.running.forEach(a=>a.pause && a.pause());
-  drops.forEach(d=>{ d.speed *= 0.6; });
-}
-</script>
+      frame.addEventListener('pointerleave', () => {
+        frame.style.zIndex = '5';
+        anime({ targets: frame, scale: 1, translateY: 0, rotate: Number(frame.dataset.tilt), duration: 360, easing: 'easeOutQuad' });
+      });
+    });
+    songs.forEach((song) => song.addEventListener('click', async () => {
+      if (currentSong === song && !audio.paused) { audio.pause(); song.classList.remove('active'); visualizer.classList.remove('playing'); status.textContent = 'dijeda'; return; }
+      songs.forEach((item) => item.classList.remove('active')); currentSong = song; song.classList.add('active'); audio.pause(); audio.src = song.dataset.src; audio.load(); status.textContent = song.dataset.title + ' — ' + song.dataset.artist; visualizer.classList.add('playing');
+      try { if (!audioContext) { audioContext = new AudioContext(); source = audioContext.createMediaElementSource(audio); analyser = audioContext.createAnalyser(); analyser.fftSize = 256; source.connect(analyser); analyser.connect(audioContext.destination); data = new Uint8Array(analyser.frequencyBinCount); } await audioContext.resume(); if (audio.readyState < 3) { await new Promise((resolve, reject) => { audio.addEventListener('canplay', resolve, { once: true }); audio.addEventListener('error', reject, { once: true }); }); } await audio.play(); } catch (error) { if (currentSong === song) { visualizer.classList.remove('playing'); status.textContent = 'audio tidak dapat dimuat'; } }
+    }));
+    volume.addEventListener('input', () => { audio.volume = Number(volume.value); });
+    audio.addEventListener('ended', () => { songs.forEach((item) => item.classList.remove('active')); visualizer.classList.remove('playing'); status.textContent = 'pilih nada untuk memulai'; });
+    audio.addEventListener('timeupdate', () => { if (!audio.paused) bounce(); });
+    anime({ targets: '.sunbeam', translateX:['-5%','18%'], translateY:['-3%','18%'], scale:[.9,1.12], direction:'alternate', loop:true, duration:8500, easing:'easeInOutSine' });
+    anime({ targets: '.ray', translateX:['-8%','22%'], translateY:['-3%','12%'], opacity:[.35,.8], direction:'alternate', loop:true, duration:6200, easing:'easeInOutSine' });
+    anime({ targets: '.title, .desk-item', opacity:[0,1], translateY:[20,0], delay:anime.stagger(80), duration:1100, easing:'easeOutExpo' });
+    resize(); window.addEventListener('resize', resize); drawWave();
+  </script>
 </body>
 </html>
