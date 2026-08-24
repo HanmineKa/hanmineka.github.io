@@ -18,7 +18,7 @@ let currentSong;
 let hoveredFrame;
 let lastBounce = 0;
 let lightFrame;
-let lightPoint = { x: 0, y: 0 };
+let lightPoint = { x: window.innerWidth * .85, y: window.innerHeight * .55 };
 
 audio.volume = Number(volume.value);
 
@@ -69,15 +69,8 @@ const drawWave = () => {
   if (!audio.paused) requestAnimationFrame(drawWave);
 };
 
-const formatTime = (seconds) => {
-  if (!Number.isFinite(seconds) || seconds < 0) return '--:--';
-  return Math.floor(seconds / 60).toString().padStart(2, '0') + ':' + Math.floor(seconds % 60).toString().padStart(2, '0');
-};
-
 const updateSongProgress = () => {
   if (!currentSong || !Number.isFinite(audio.duration) || audio.duration <= 0) return;
-  const remaining = Math.max(0, audio.duration - audio.currentTime);
-  currentSong.querySelector('.song-time').textContent = formatTime(remaining) + ' left';
   currentSong.querySelector('.song-progress').style.setProperty('--progress', (audio.currentTime / audio.duration * 100) + '%');
 };
 
@@ -85,7 +78,7 @@ const bounce = () => {
   const now = performance.now();
   if (now - lastBounce < 220 || hoveredFrame) return;
   lastBounce = now;
-  anime({ targets: '.music-sheet, .blue-strip, .page-fragment', translateY: () => anime.random(-3, 3), duration: 180, easing: 'easeOutQuad' });
+  anime({ targets: '.polaroid, .music-sheet, .blue-strip, .page-fragment', translateY: () => anime.random(-3, 3), duration: 180, easing: 'easeOutQuad' });
 };
 
 const setLightDirection = () => {
@@ -96,14 +89,16 @@ const setLightDirection = () => {
   lightFrame = null;
 };
 
-page.addEventListener('pointermove', (event) => {
-  lightPoint = { x: event.clientX, y: event.clientY };
+const aimLightAt = (frame) => {
+  const bounds = frame.getBoundingClientRect();
+  lightPoint = { x: bounds.left + bounds.width / 2, y: bounds.top + bounds.height / 2 };
   if (!lightFrame) lightFrame = requestAnimationFrame(setLightDirection);
-});
+};
 
 document.querySelectorAll('.polaroid').forEach((frame) => {
   frame.addEventListener('pointerenter', () => {
     hoveredFrame = frame;
+    aimLightAt(frame);
     anime.remove(frame);
     document.querySelectorAll('.polaroid').forEach((item) => item.style.setProperty('z-index', '5', 'important'));
     frame.style.setProperty('z-index', '30', 'important');
@@ -111,6 +106,8 @@ document.querySelectorAll('.polaroid').forEach((frame) => {
   });
   frame.addEventListener('pointerleave', () => {
     hoveredFrame = null;
+    lightPoint = { x: page.clientWidth * .85, y: page.clientHeight * .55 };
+    if (!lightFrame) lightFrame = requestAnimationFrame(setLightDirection);
     frame.style.setProperty('z-index', '5', 'important');
     anime({ targets: frame, scale: 1, translateY: 0, rotate: Number(frame.dataset.tilt), duration: 300, easing: 'easeOutQuad' });
   });
@@ -136,7 +133,7 @@ songs.forEach((song) => song.addEventListener('click', async () => {
     return;
   }
   songs.forEach((item) => item.classList.remove('active'));
-  songs.forEach((item) => { item.querySelector('.song-time').textContent = '--:--'; item.querySelector('.song-progress').style.setProperty('--progress', '0%'); });
+  songs.forEach((item) => item.querySelector('.song-progress').style.setProperty('--progress', '0%'));
   currentSong = song;
   song.classList.add('active');
   audio.pause();
@@ -166,7 +163,7 @@ songs.forEach((song) => song.addEventListener('click', async () => {
 volume.addEventListener('input', () => { audio.volume = Number(volume.value); });
 audio.addEventListener('loadedmetadata', updateSongProgress);
 audio.addEventListener('timeupdate', () => { updateSongProgress(); if (!audio.paused) bounce(); });
-audio.addEventListener('ended', () => { songs.forEach((item) => item.classList.remove('active')); if (currentSong) { currentSong.querySelector('.song-time').textContent = '00:00'; currentSong.querySelector('.song-progress').style.setProperty('--progress', '100%'); } visualizer.classList.remove('playing'); status.textContent = 'pilih nada untuk memulai'; });
+audio.addEventListener('ended', () => { songs.forEach((item) => item.classList.remove('active')); if (currentSong) currentSong.querySelector('.song-progress').style.setProperty('--progress', '100%'); visualizer.classList.remove('playing'); status.textContent = 'pilih nada untuk memulai'; });
 
 updateTimeMood();
 setInterval(updateTimeMood, 60000);
@@ -174,4 +171,4 @@ resize();
 window.addEventListener('resize', resize);
 anime({ targets: '.sunbeam', translateX: ['-5%', '18%'], translateY: ['-3%', '18%'], scale: [.9, 1.12], direction: 'alternate', loop: true, duration: 8500, easing: 'easeInOutSine' });
 anime({ targets: '.ray', opacity: [.35, .8], direction: 'alternate', loop: true, duration: 6200, easing: 'easeInOutSine' });
-anime({ targets: '.music-sheet, .blue-strip, .page-fragment, .lace, .paper-note', opacity: [0, 1], translateY: [20, 0], delay: anime.stagger(80), duration: 1100, easing: 'easeOutExpo' });
+anime({ targets: '.music-sheet, .blue-strip, .page-fragment, .lace', opacity: [0, 1], translateY: [20, 0], delay: anime.stagger(80), duration: 1100, easing: 'easeOutExpo' });
