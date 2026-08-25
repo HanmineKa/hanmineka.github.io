@@ -10,6 +10,11 @@ const ray = document.querySelector('.ray');
 const viewer = document.querySelector('#photo-viewer');
 const viewerImage = document.querySelector('#viewer-image');
 const viewerCaption = document.querySelector('#viewer-caption');
+const starAccess = document.querySelector('#star-access');
+const memoryGate = document.querySelector('#memory-gate');
+const memoryForm = document.querySelector('#memory-form');
+const memoryPassword = document.querySelector('#memory-password');
+const gateError = document.querySelector('#gate-error');
 let audioContext;
 let analyser;
 let source;
@@ -78,7 +83,7 @@ const bounce = () => {
   const now = performance.now();
   if (now - lastBounce < 220 || hoveredFrame) return;
   lastBounce = now;
-  anime({ targets: '.polaroid, .music-sheet, .blue-strip, .page-fragment', translateY: () => anime.random(-3, 3), duration: 180, easing: 'easeOutQuad' });
+  anime({ targets: '.polaroid, .music-sheet, .blue-strip, .page-fragment, .star-access', translateY: () => anime.random(-3, 3), duration: 180, easing: 'easeOutQuad' });
 };
 
 const setLightDirection = () => {
@@ -122,7 +127,33 @@ document.querySelectorAll('.polaroid').forEach((frame) => {
 const closeViewer = () => viewer.classList.remove('open');
 document.querySelector('#viewer-close').addEventListener('click', closeViewer);
 viewer.addEventListener('click', (event) => { if (event.target === viewer) closeViewer(); });
-document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeViewer(); });
+const closeMemoryGate = () => {
+  memoryGate.classList.remove('open');
+  memoryGate.setAttribute('aria-hidden', 'true');
+  gateError.textContent = '';
+  memoryForm.reset();
+};
+starAccess.addEventListener('click', () => {
+  memoryGate.classList.add('open');
+  memoryGate.setAttribute('aria-hidden', 'false');
+  memoryPassword.focus();
+});
+document.querySelector('#gate-close').addEventListener('click', closeMemoryGate);
+memoryGate.addEventListener('click', (event) => { if (event.target === memoryGate) closeMemoryGate(); });
+memoryForm.addEventListener('submit', (event) => {
+  event.preventDefault();
+  if (memoryPassword.value === 'precious_person') {
+    window.location.href = 'spesial/index.html';
+    return;
+  }
+  gateError.textContent = 'Kata sandi itu belum membuka kenangan ini.';
+  memoryPassword.select();
+});
+document.addEventListener('keydown', (event) => {
+  if (event.key !== 'Escape') return;
+  closeViewer();
+  if (memoryGate.classList.contains('open')) closeMemoryGate();
+});
 
 songs.forEach((song) => song.addEventListener('click', async () => {
   if (currentSong === song && !audio.paused) {
@@ -171,4 +202,4 @@ resize();
 window.addEventListener('resize', resize);
 anime({ targets: '.sunbeam', translateX: ['-5%', '18%'], translateY: ['-3%', '18%'], scale: [.9, 1.12], direction: 'alternate', loop: true, duration: 8500, easing: 'easeInOutSine' });
 anime({ targets: '.ray', opacity: [.35, .8], direction: 'alternate', loop: true, duration: 6200, easing: 'easeInOutSine' });
-anime({ targets: '.music-sheet, .blue-strip, .page-fragment, .lace', opacity: [0, 1], translateY: [20, 0], delay: anime.stagger(80), duration: 1100, easing: 'easeOutExpo' });
+anime({ targets: '.music-sheet, .blue-strip, .page-fragment, .lace, .star-access', opacity: [0, 1], translateY: [20, 0], delay: anime.stagger(80), duration: 1100, easing: 'easeOutExpo' });
