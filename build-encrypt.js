@@ -20,7 +20,6 @@ const readline = require('readline');
 const SPESIAL_DIR = path.join(__dirname, 'spesial');
 const OUTPUT_FILE = path.join(__dirname, 'stratterium.enc.json');
 const PBKDF2_ITERATIONS = 250000;
-const configuredPassword = process.env.STRATTERIUM_PASSWORD;
 
 function readFileB64(relPath) {
   return fs.readFileSync(path.join(SPESIAL_DIR, relPath)).toString('base64');
@@ -32,7 +31,6 @@ function readFileText(relPath) {
 
 // prompt password dengan karakter yang diketik disamarkan jadi "*"
 function promptPassword(question) {
-  if (configuredPassword) return Promise.resolve(configuredPassword);
   return new Promise((resolve) => {
     const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
     let masking = false;
@@ -61,6 +59,7 @@ async function main() {
   const payload = {
     html: readFileText('stratterium-css-objects.html'),
     animationFramework: readFileText('animation-framework.js'),
+    textEffects: readFileText('text-effects.js'),
     sceneTimeline: JSON.parse(readFileText('scene-timeline.json')),
     subtitleCues: JSON.parse(readFileText('subtitle-cues.json')),
     assets: {
