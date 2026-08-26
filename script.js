@@ -133,6 +133,23 @@ const closeMemoryGate = () => {
   gateError.textContent = '';
   memoryForm.reset();
 };
+const deriveKey = async (password, saltB64) => {
+  const salt = Uint8Array.from(atob(saltB64), (char) => char.charCodeAt(0));
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(password),
+    'PBKDF2',
+    false,
+    ['deriveKey']
+  );
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt, iterations: 250000, hash: 'SHA-256' },
+    keyMaterial,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['decrypt']
+  );
+};
 starAccess.addEventListener('click', () => {
   memoryGate.classList.add('open');
   memoryGate.setAttribute('aria-hidden', 'false');
@@ -140,14 +157,25 @@ starAccess.addEventListener('click', () => {
 });
 document.querySelector('#gate-close').addEventListener('click', closeMemoryGate);
 memoryGate.addEventListener('click', (event) => { if (event.target === memoryGate) closeMemoryGate(); });
-memoryForm.addEventListener('submit', (event) => {
+memoryForm.addEventListener('submit', async (event) => {
   event.preventDefault();
-  if (memoryPassword.value === 'precious_person') {
-    window.location.href = 'spesial/index.html';
-    return;
+  gateError.textContent = '';
+  try {
+    const response = await fetch('stratterium.enc.json');
+    if (!response.ok) throw new Error('encrypted payload unavailable');
+    const { salt, iv, ciphertext } = await response.json();
+    const key = await deriveKey(memoryPassword.value, salt);
+    const decrypted = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv: Uint8Array.from(atob(iv), (char) => char.charCodeAt(0)) },
+      key,
+      Uint8Array.from(atob(ciphertext), (char) => char.charCodeAt(0))
+    );
+    sessionStorage.setItem('stratterium_payload', new TextDecoder().decode(decrypted));
+    window.location.href = 'stratterium-secret.html';
+  } catch (error) {
+    gateError.textContent = 'Kata sandi itu belum membuka kenangan ini.';
+    memoryPassword.select();
   }
-  gateError.textContent = 'Kata sandi itu belum membuka kenangan ini.';
-  memoryPassword.select();
 });
 document.addEventListener('keydown', (event) => {
   if (event.key !== 'Escape') return;
