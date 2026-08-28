@@ -135,17 +135,19 @@ const closeMemoryGate = () => {
 };
 const deriveKey = async (password, saltB64) => {
   const salt = Uint8Array.from(atob(saltB64), (char) => char.charCodeAt(0));
-  const keyMaterial = await crypto.subtle.importKey(
+  const keyBytes = await hashwasm.argon2id({
+    password,
+    salt,
+    iterations: 3,
+    memorySize: 65536,
+    parallelism: 1,
+    hashLength: 32,
+    outputType: 'binary'
+  });
+  return crypto.subtle.importKey(
     'raw',
-    new TextEncoder().encode(password),
-    'PBKDF2',
-    false,
-    ['deriveKey']
-  );
-  return crypto.subtle.deriveKey(
-    { name: 'PBKDF2', salt, iterations: 250000, hash: 'SHA-256' },
-    keyMaterial,
-    { name: 'AES-GCM', length: 256 },
+    keyBytes,
+    'AES-GCM',
     false,
     ['decrypt']
   );
@@ -161,7 +163,7 @@ memoryForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   gateError.textContent = '';
   try {
-    const response = await fetch('stratterium.enc.json');
+    const response = await fetch('stratterium/stratterium.enc.json');
     if (!response.ok) throw new Error('encrypted payload unavailable');
     const { salt, iv, ciphertext } = await response.json();
     const key = await deriveKey(memoryPassword.value, salt);
@@ -171,7 +173,7 @@ memoryForm.addEventListener('submit', async (event) => {
       Uint8Array.from(atob(ciphertext), (char) => char.charCodeAt(0))
     );
     sessionStorage.setItem('stratterium_payload', new TextDecoder().decode(decrypted));
-    window.location.href = 'stratterium-secret.html';
+    window.location.href = 'stratterium/stratterium-secret.html';
   } catch (error) {
     gateError.textContent = 'Kata sandi itu belum membuka kenangan ini.';
     memoryPassword.select();
