@@ -1,0 +1,8 @@
+{
+  "name": "local-argon2id-tool",
+  "private": true,
+  "description": "Reusable Argon2id WASM helper for local build scripts",
+  "dependencies": {
+    "hash-wasm": "4.12.0"
+  }
+}

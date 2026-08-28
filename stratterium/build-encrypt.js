@@ -1,10 +1,10 @@
 /**
  * build-encrypt.js
  * -----------------
- * Dijalankan LOKAL SAJA lewat: node build-encrypt.js
+ * Dijalankan LOKAL SAJA lewat: node stratterium/build-encrypt.js
  *
  * Membaca semua isi folder spesial/, menggabungkannya jadi satu payload,
- * lalu mengenkripsinya (AES-256-GCM, key dari PBKDF2) jadi satu file
+ * lalu mengenkripsinya (AES-256-GCM, key dari Argon2id) jadi satu file
  * stratterium.enc.json yang aman untuk di-commit ke repo publik.
  *
  * Folder spesial/ TIDAK PERNAH ikut ter-commit — pastikan sudah ada di
@@ -16,10 +16,10 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
+const { deriveKey } = require('../tools/argon2id');
 
-const SPESIAL_DIR = path.join(__dirname, 'spesial');
+const SPESIAL_DIR = path.join(__dirname, '..', 'spesial');
 const OUTPUT_FILE = path.join(__dirname, 'stratterium.enc.json');
-const PBKDF2_ITERATIONS = 250000;
 
 function readFileB64(relPath) {
   return fs.readFileSync(path.join(SPESIAL_DIR, relPath)).toString('base64');
@@ -51,7 +51,7 @@ async function main() {
 
   if (!fs.existsSync(SPESIAL_DIR)) {
     console.error(`Folder tidak ditemukan: ${SPESIAL_DIR}`);
-    console.error('Pastikan build-encrypt.js ini ditaruh sejajar dengan folder spesial/.');
+    console.error('Pastikan folder spesial/ tersedia di root proyek.');
     process.exit(1);
   }
 
@@ -89,7 +89,7 @@ async function main() {
 
   const salt = crypto.randomBytes(16);
   const iv = crypto.randomBytes(12); // 96-bit, standar AES-GCM
-  const key = crypto.pbkdf2Sync(password, salt, PBKDF2_ITERATIONS, 32, 'sha256');
+  const key = await deriveKey(password, salt);
 
   const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
   const encrypted = Buffer.concat([cipher.update(plaintext), cipher.final()]);
@@ -109,7 +109,7 @@ async function main() {
   console.log(`\nSelesai → ${OUTPUT_FILE}`);
   console.log(`Ukuran file terenkripsi: ${(fs.statSync(OUTPUT_FILE).size / 1024 / 1024).toFixed(2)} MB`);
   console.log('\nLangkah selanjutnya:');
-  console.log('  1. Commit HANYA stratterium.enc.json (+ build-encrypt.js kalau mau) ke repo.');
+  console.log('  1. Commit stratterium/stratterium.enc.json dan tools/argon2id/argon2.umd.min.js ke repo.');
   console.log('  2. JANGAN commit folder spesial/ — cek .gitignore.');
   console.log('  3. Pastikan password di script.js (memoryForm submit) sudah pakai skema decrypt,');
   console.log('     bukan string plaintext lama.');
