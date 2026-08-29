@@ -15,6 +15,39 @@ const memoryGate = document.querySelector('#memory-gate');
 const memoryForm = document.querySelector('#memory-form');
 const memoryPassword = document.querySelector('#memory-password');
 const gateError = document.querySelector('#gate-error');
+const isDesktop = () => window.innerWidth >= 1024;
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const loadScript = (src) => new Promise((resolve, reject) => {
+  const existing = document.querySelector(`script[src="${src}"]`);
+  if (existing) {
+    if (existing.dataset.loaded === 'true') {
+      resolve();
+      return;
+    }
+    existing.addEventListener('load', () => resolve(), { once: true });
+    existing.addEventListener('error', () => reject(new Error(`Failed to load ${src}`)), { once: true });
+    return;
+  }
+
+  const script = document.createElement('script');
+  script.src = src;
+  script.async = false;
+  script.onload = () => {
+    script.dataset.loaded = 'true';
+    resolve();
+  };
+  script.onerror = () => reject(new Error(`Failed to load ${src}`));
+  document.head.appendChild(script);
+});
+const ensureVisualLibraries = async () => {
+  if (!isDesktop()) return;
+  if (!window.THREE) await loadScript('js/three.min.js');
+  if (!window.p5) await loadScript('js/p5.min.js');
+};
+const ensureArgon2 = async () => {
+  if (window.hashwasm) return;
+  await loadScript('tools/argon2id/argon2.umd.min.js');
+};
 let audioContext;
 let analyser;
 let source;
@@ -30,6 +63,8 @@ let threeRenderer;
 let threeScene;
 let threeCamera;
 let threeLights;
+let threeRenderLoop = null;
+let desktopVisualsReady = false;
 
 const SceneState = {
   lightPoint: { x: window.innerWidth * .85, y: window.innerHeight * .55 },
@@ -73,6 +108,59 @@ const updateTimeMood = () => {
   document.querySelector('#time-icon').textContent = activeMood.icon;
 };
 
+const suspendVisuals = () => {
+  if (threeRenderer && threeRenderLoop) {
+    threeRenderer.setAnimationLoop(null);
+  }
+  if (waveformSketch && typeof waveformSketch.noLoop === 'function') {
+    waveformSketch.noLoop();
+  }
+};
+
+const resumeVisuals = () => {
+  if (!isDesktop() || prefersReducedMotion || document.hidden) return;
+  if (threeRenderer && threeRenderLoop) {
+    threeRenderer.setAnimationLoop(threeRenderLoop);
+  }
+  if (waveformSketch && typeof waveformSketch.loop === 'function') {
+    waveformSketch.loop();
+  }
+};
+
+const startDesktopVisuals = () => {
+  if (!isDesktop() || prefersReducedMotion) return;
+  desktopVisualsReady = true;
+  const runner = () => {
+    ensureVisualLibraries().then(() => {
+      if (window.THREE && !threeRenderer && threeCanvas) initThreeLighting();
+      if (window.p5 && !waveformSketch && waveContainer) initWaveform();
+      if (document.hidden) {
+        suspendVisuals();
+      } else {
+        resumeVisuals();
+      }
+    }).catch(() => {
+      // Keep the page functional even if the optional desktop visual layer fails to load.
+    });
+  };
+
+  if ('requestIdleCallback' in window) {
+    window.requestIdleCallback(runner);
+  } else {
+    setTimeout(runner, 180);
+  }
+};
+
+const handleVisibilityChange = () => {
+  if (document.hidden) {
+    suspendVisuals();
+    return;
+  }
+  if (desktopVisualsReady) {
+    resumeVisuals();
+  }
+};
+
 const initThreeLighting = () => {
   if (!window.THREE || threeRenderer || !threeCanvas) return;
 
@@ -105,6 +193,7 @@ const initThreeLighting = () => {
   threeScene.add(glowGroup);
 
   const renderThree = () => {
+    if (document.hidden || !desktopVisualsReady) return;
     const time = performance.now() * 0.001;
     const mood = SceneState.currentMood || timeMoods[2];
     const hourWave = Math.sin(time * 0.65 + (mood.start || 16) * 0.45);
@@ -136,7 +225,10 @@ const initThreeLighting = () => {
     threeRenderer.render(threeScene, threeCamera);
   };
 
-  threeRenderer.setAnimationLoop(renderThree);
+  threeRenderLoop = renderThree;
+  if (!document.hidden) {
+    threeRenderer.setAnimationLoop(renderThree);
+  }
 };
 
 const resize = () => {
@@ -353,6 +445,7 @@ memoryForm.addEventListener('submit', async (event) => {
     const response = await fetch('stratterium/stratterium.enc.json');
     if (!response.ok) throw new Error('encrypted payload unavailable');
     const { salt, iv, ciphertext } = await response.json();
+    await ensureArgon2();
     const key = await deriveKey(memoryPassword.value, salt);
     const decrypted = await crypto.subtle.decrypt(
       { name: 'AES-GCM', iv: Uint8Array.from(atob(iv), (char) => char.charCodeAt(0)) },
@@ -419,8 +512,8 @@ audio.addEventListener('ended', () => { songs.forEach((item) => item.classList.r
 
 updateTimeMood();
 setInterval(updateTimeMood, 60000);
-initThreeLighting();
-initWaveform();
+document.addEventListener('visibilitychange', handleVisibilityChange);
+startDesktopVisuals();
 resize();
 window.addEventListener('resize', resize);
 
