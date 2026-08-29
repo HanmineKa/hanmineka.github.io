@@ -7,37 +7,40 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,500;1,500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" defer></script>
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="js/anime.min.js" defer></script>
+  <script src="js/three.min.js" defer></script>
+  <script src="js/p5.min.js" defer></script>
   <script src="tools/argon2id/argon2.umd.min.js" defer></script>
-  <script src="script.js" defer></script>
+  <script src="js/script.js" defer></script>
 </head>
 <body>
+  <canvas id="three-bg" aria-hidden="true"></canvas>
   <main class="page">
     <div class="sunbeam" aria-hidden="true"></div><div class="ray" aria-hidden="true"></div>
     <header class="topbar"><div class="brand"><i></i><span id="calendar-label">hari, tanggal, tahun</span></div><div class="time-display"><span class="time-icon" id="time-icon" aria-hidden="true">☕</span><div class="date" id="time-label">cahaya, 17:42</div></div></header>
     <section class="desk" aria-label="Kolase kenangan">
       <div class="desk-item music-sheet"></div><div class="desk-item blue-strip"></div>
-      <button class="desk-item star-access" id="star-access" type="button" aria-label="Buka arsip yang terlupakan"><img src="assets/bintang.webp" alt=""></button>
+      <button class="desk-item star-access" id="star-access" type="button" aria-label="Buka arsip yang terlupakan"><img src="assets/images/bintang.webp" alt=""></button>
       <div class="desk-item page-fragment">Fock — Wolfs glissant<br><br><small>beberapa kata lama menunggu disentuh cahaya</small></div>
       <div class="desk-item lace"></div>
-      <div class="desk-item polaroid photo-a" data-tilt="-11"><img src="photos/IMG_20230528_060227.webp" alt="Foto personal dari arsip pagi"></div>
-      <div class="desk-item polaroid photo-b" data-tilt="7"><img src="photos/IMG_20230528_060823.webp" alt="Foto personal dari arsip perjalanan"></div>
-      <div class="desk-item polaroid photo-c" data-tilt="-7"><img src="photos/IMG_20230528_061601.webp" alt="Foto personal dari arsip pagi"></div>
-      <div class="desk-item polaroid photo-d" data-tilt="14"><img src="photos/00000IMG_00000_BURST20230528060322882_COVER.webp" alt="Foto personal dari arsip pagi"></div>
-      <div class="desk-item polaroid photo-e" data-tilt="-4"><img src="photos/IMG_20230528_062551.webp" alt="Foto personal dari arsip pagi"></div>
-      <div class="desk-item polaroid photo-f" data-tilt="9"><img src="photos/IMG_20230528_063447.webp" alt="Foto personal dari arsip pagi"></div>
-      <div class="desk-item polaroid photo-g" data-tilt="-14"><img src="photos/IMG_20230528_170702.webp" alt="Foto personal dari arsip sore"></div>
+      <div class="desk-item polaroid photo-a" data-tilt="-11"><img src="assets/photos/IMG_20230528_060227.webp" alt="Foto personal dari arsip pagi"></div>
+      <div class="desk-item polaroid photo-b" data-tilt="7"><img src="assets/photos/IMG_20230528_060823.webp" alt="Foto personal dari arsip perjalanan"></div>
+      <div class="desk-item polaroid photo-c" data-tilt="-7"><img src="assets/photos/IMG_20230528_061601.webp" alt="Foto personal dari arsip pagi"></div>
+      <div class="desk-item polaroid photo-d" data-tilt="14"><img src="assets/photos/00000IMG_00000_BURST20230528060322882_COVER.webp" alt="Foto personal dari arsip pagi"></div>
+      <div class="desk-item polaroid photo-e" data-tilt="-4"><img src="assets/photos/IMG_20230528_062551.webp" alt="Foto personal dari arsip pagi"></div>
+      <div class="desk-item polaroid photo-f" data-tilt="9"><img src="assets/photos/IMG_20230528_063447.webp" alt="Foto personal dari arsip pagi"></div>
+      <div class="desk-item polaroid photo-g" data-tilt="-14"><img src="assets/photos/IMG_20230528_170702.webp" alt="Foto personal dari arsip sore"></div>
     </section>
-    <div class="visualizer" id="visualizer"><canvas id="wave"></canvas></div>
+    <div class="visualizer" id="visualizer"><div id="wave" aria-hidden="true"></div></div>
     <div class="photo-viewer" id="photo-viewer" role="dialog" aria-modal="true" aria-label="Foto diperbesar"><button class="viewer-close" id="viewer-close" aria-label="Tutup foto">×</button><figure><img id="viewer-image" alt=""><figcaption id="viewer-caption"></figcaption></figure></div>
     <div class="memory-gate" id="memory-gate" role="dialog" aria-modal="true" aria-labelledby="memory-gate-title" aria-hidden="true"><form class="memory-form" id="memory-form"><button class="gate-close" id="gate-close" type="button" aria-label="Tutup arsip">×</button><h2 id="memory-gate-title">Hal yang telah lama kau lupakan</h2><label for="memory-password">Password</label><input id="memory-password" name="password" type="password" autocomplete="current-password" required><p class="gate-error" id="gate-error" role="alert" aria-live="polite"></p><button class="gate-submit" type="submit">Buka</button></form></div>
     <section class="songs" aria-label="Favourite song"><div class="songs-head"><span>Favourite song</span><label class="volume-control" aria-label="Volume audio">◖ <input id="volume" type="range" min="0" max="1" step="0.01" value="0.75" aria-label="Volume"></label><span id="status">pilih nada untuk memulai</span></div><div class="bubbles">
-      <button class="song" data-index="01" data-title="Touka reset" data-artist="Nekobolo/Sasanomaly" data-src="musics/Touka reset.mp3"><strong>Touka reset</strong><small>Nekobolo/Sasanomaly</small><span class="song-progress" aria-hidden="true"></span></button>
-      <button class="song" data-index="02" data-title="Floating candle" data-artist="Nekobolo/Sasanomaly" data-src="musics/Floating candle.mp3"><strong>Floating candle</strong><small>Nekobolo/Sasanomaly</small><span class="song-progress" aria-hidden="true"></span></button>
-      <button class="song" data-index="03" data-title="See you tomorrow" data-artist="Nekobolo/Sasanomaly" data-src="musics/See you tomorrow.mp3"><strong>See you tomorrow</strong><small>Nekobolo/Sasanomaly</small><span class="song-progress" aria-hidden="true"></span></button>
-      <button class="song" data-index="04" data-title="Spring flower" data-artist="Nekobolo/Sasanomaly" data-src="musics/Spring flower.mp3"><strong>Spring flower</strong><small>Nekobolo/Sasanomaly</small><span class="song-progress" aria-hidden="true"></span></button>
-      <button class="song" data-index="05" data-title="Umbrella" data-artist="Nekobolo/Sasanomaly" data-src="musics/Umbrella.mp3"><strong>Umbrella</strong><small>Nekobolo/Sasanomaly</small><span class="song-progress" aria-hidden="true"></span></button>
+      <button class="song" data-index="01" data-title="Touka reset" data-artist="Nekobolo/Sasanomaly" data-src="assets/musics/Touka reset.mp3"><strong>Touka reset</strong><small>Nekobolo/Sasanomaly</small><span class="song-progress" aria-hidden="true"></span></button>
+      <button class="song" data-index="02" data-title="Floating candle" data-artist="Nekobolo/Sasanomaly" data-src="assets/musics/Floating candle.mp3"><strong>Floating candle</strong><small>Nekobolo/Sasanomaly</small><span class="song-progress" aria-hidden="true"></span></button>
+      <button class="song" data-index="03" data-title="See you tomorrow" data-artist="Nekobolo/Sasanomaly" data-src="assets/musics/See you tomorrow.mp3"><strong>See you tomorrow</strong><small>Nekobolo/Sasanomaly</small><span class="song-progress" aria-hidden="true"></span></button>
+      <button class="song" data-index="04" data-title="Spring flower" data-artist="Nekobolo/Sasanomaly" data-src="assets/musics/Spring flower.mp3"><strong>Spring flower</strong><small>Nekobolo/Sasanomaly</small><span class="song-progress" aria-hidden="true"></span></button>
+      <button class="song" data-index="05" data-title="Umbrella" data-artist="Nekobolo/Sasanomaly" data-src="assets/musics/Umbrella.mp3"><strong>Umbrella</strong><small>Nekobolo/Sasanomaly</small><span class="song-progress" aria-hidden="true"></span></button>
     </div></section>
   </main>
   <audio id="audio" crossorigin="anonymous"></audio>
