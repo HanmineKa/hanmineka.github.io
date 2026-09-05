@@ -17,6 +17,7 @@ const memoryPassword = document.querySelector('#memory-password');
 const gateError = document.querySelector('#gate-error');
 const isDesktop = () => window.innerWidth >= 1024;
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const threeWebGpuUrl = './three.webgpu.js';
 const loadScript = (src) => new Promise((resolve, reject) => {
   const existing = document.querySelector(`script[src="${src}"]`);
   if (existing) {
@@ -41,7 +42,11 @@ const loadScript = (src) => new Promise((resolve, reject) => {
 });
 const ensureVisualLibraries = async () => {
   if (!isDesktop()) return;
-  if (!window.THREE) await loadScript('js/three.min.js');
+  if (!window.THREE) {
+    const threeModule = await import(threeWebGpuUrl);
+    if (!threeModule.WebGPURenderer) throw new Error('WebGPU renderer is unavailable');
+    window.THREE = threeModule;
+  }
   if (!window.p5) await loadScript('js/p5.min.js');
 };
 const ensureArgon2 = async () => {
@@ -64,6 +69,7 @@ let threeScene;
 let threeCamera;
 let threeLights;
 let threeRenderLoop = null;
+let threeInitPromise = null;
 let desktopVisualsReady = false;
 
 const SceneState = {
@@ -75,6 +81,10 @@ const SceneState = {
   ambientPulse: 0,
   wavePalette: [255, 224, 149],
   currentMood: null,
+  moodBrightness: 1,
+  lightPulse: 0,
+  lightOrbit: 0,
+  glowDrift: 0,
 };
 
 audio.volume = Number(volume.value);
@@ -100,8 +110,7 @@ const updateTimeMood = () => {
     threeLights.ambient.color.setHex(activeMood.threeAmbient);
     threeLights.directional.color.setHex(activeMood.threeDirectional);
     threeLights.fill.color.setHex(activeMood.threeFill);
-    threeLights.directional.intensity = 1.4 + (activeMood.start >= 19 || activeMood.start === 0 ? 0.9 : 0.35);
-    threeLights.fill.intensity = 1.1 + (activeMood.start >= 19 || activeMood.start === 0 ? 1.1 : 0.2);
+    SceneState.moodBrightness = activeMood.start >= 19 || activeMood.start === 0 ? 1.18 : 1;
   }
   document.querySelector('#calendar-label').textContent = new Intl.DateTimeFormat('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(now);
   document.querySelector('#time-label').textContent = activeMood.name + ', ' + String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
@@ -132,7 +141,9 @@ const startDesktopVisuals = () => {
   desktopVisualsReady = true;
   const runner = () => {
     ensureVisualLibraries().then(() => {
-      if (window.THREE && !threeRenderer && threeCanvas) initThreeLighting();
+      if (window.THREE && !threeRenderer && !threeInitPromise && threeCanvas) {
+        threeInitPromise = initThreeLighting();
+      }
       if (window.p5 && !waveformSketch && waveContainer) initWaveform();
       if (document.hidden) {
         suspendVisuals();
@@ -161,10 +172,12 @@ const handleVisibilityChange = () => {
   }
 };
 
-const initThreeLighting = () => {
+const initThreeLighting = async () => {
   if (!window.THREE || threeRenderer || !threeCanvas) return;
 
-  threeRenderer = new THREE.WebGLRenderer({ canvas: threeCanvas, alpha: true, antialias: true });
+  const renderer = new THREE.WebGPURenderer({ canvas: threeCanvas, alpha: true, antialias: true });
+  await renderer.init();
+  threeRenderer = renderer;
   threeRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   threeRenderer.setSize(window.innerWidth, window.innerHeight);
   threeRenderer.setClearColor(0x000000, 0);
@@ -183,6 +196,29 @@ const initThreeLighting = () => {
   threeLights.fill.position.set(-5, -3, 7);
   threeScene.add(threeLights.ambient, threeLights.directional, threeLights.fill);
 
+  anime({
+    targets: SceneState,
+    lightPulse: [0, 1],
+    duration: 4200,
+    direction: 'alternate',
+    loop: true,
+    easing: 'easeInOutSine'
+  });
+  anime({
+    targets: SceneState,
+    lightOrbit: [0, Math.PI * 2],
+    duration: 18000,
+    loop: true,
+    easing: 'linear'
+  });
+  anime({
+    targets: SceneState,
+    glowDrift: [0, Math.PI * 2],
+    duration: 12000,
+    loop: true,
+    easing: 'linear'
+  });
+
   const glowGroup = new THREE.Group();
   const glowMaterial = new THREE.MeshBasicMaterial({ color: 0xfff3bf, transparent: true, opacity: 0.2, side: THREE.DoubleSide, depthWrite: false });
   const diskA = new THREE.Mesh(new THREE.PlaneGeometry(16, 16), glowMaterial.clone());
@@ -194,28 +230,27 @@ const initThreeLighting = () => {
 
   const renderThree = () => {
     if (document.hidden || !desktopVisualsReady) return;
-    const time = performance.now() * 0.001;
     const mood = SceneState.currentMood || timeMoods[2];
-    const hourWave = Math.sin(time * 0.65 + (mood.start || 16) * 0.45);
-    const pulse = audio && !audio.paused ? (Math.sin(time * 6) * 0.5 + 0.5) * 0.9 : 0.35;
+    const pulse = audio && !audio.paused ? 0.45 + SceneState.lightPulse * 0.55 : 0.25;
+    const brightness = SceneState.moodBrightness;
 
     if (threeLights) {
       const directionalBase = 1.2 + (mood.start >= 19 || mood.start === 0 ? 1.15 : 0.4);
       const fillBase = 0.8 + (mood.start >= 19 || mood.start === 0 ? 1.2 : 0.25);
 
-      threeLights.ambient.intensity = 1.3 + hourWave * 0.5 + pulse * 0.35;
-      threeLights.directional.intensity = directionalBase + pulse * 1.25 + Math.sin(time * 0.9) * 0.25;
-      threeLights.directional.position.x = Math.sin(time * 0.65) * 5.2;
-      threeLights.directional.position.y = 3.8 + Math.sin(time * 0.9) * 1.6;
-      threeLights.directional.position.z = 7 + Math.cos(time * 0.7) * 2.2;
-      threeLights.fill.intensity = fillBase + pulse * 1.1;
-      threeLights.fill.position.x = Math.cos(time * 0.9) * 4.8 - 1.5;
-      threeLights.fill.position.y = Math.sin(time * 0.8) * 3.1;
+      threeLights.ambient.intensity = (1.3 + pulse * 0.35) * brightness;
+      threeLights.directional.intensity = (directionalBase + pulse * 1.25) * brightness;
+      threeLights.directional.position.x = Math.sin(SceneState.lightOrbit) * 5.2;
+      threeLights.directional.position.y = 3.8 + Math.sin(SceneState.lightOrbit * 1.4) * 1.6;
+      threeLights.directional.position.z = 7 + Math.cos(SceneState.lightOrbit * 1.1) * 2.2;
+      threeLights.fill.intensity = (fillBase + pulse * 1.1) * brightness;
+      threeLights.fill.position.x = Math.cos(SceneState.lightOrbit * 1.4) * 4.8 - 1.5;
+      threeLights.fill.position.y = Math.sin(SceneState.lightOrbit * 1.25) * 3.1;
     }
 
     if (glowGroup) {
-      glowGroup.rotation.z = Math.sin(time * 0.4) * 0.22;
-      glowGroup.position.y = Math.sin(time * 0.75) * 0.4;
+      glowGroup.rotation.z = Math.sin(SceneState.glowDrift) * 0.22;
+      glowGroup.position.y = Math.sin(SceneState.glowDrift * 1.6) * 0.4;
       glowGroup.children.forEach((mesh, index) => {
         const opacity = 0.12 + pulse * 0.18 + index * 0.04;
         mesh.material.opacity = opacity;
