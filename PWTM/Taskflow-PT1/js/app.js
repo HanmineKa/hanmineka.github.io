@@ -30,7 +30,7 @@ const SCHEMA_SQL = `
 `;
 
 async function initApp() {
-  setStatus('Memuat sql.js...');
+  setStatus('Loading sql.js...');
 
   SQL = await initSqlJsGlobal();
 
@@ -38,10 +38,10 @@ async function initApp() {
 
   if (savedBytes) {
     db = new SQL.Database(new Uint8Array(savedBytes));
-    setStatus('Data dimuat dari penyimpanan lokal.');
+    setStatus('Data loaded from local storage.');
   } else {
     db = await loadDefaultData();
-    setStatus('Data default dimuat.');
+    setStatus('Default data loaded.');
   }
 
   db.run(SCHEMA_SQL);
@@ -140,7 +140,7 @@ function render() {
 
   if (rows.length === 0) {
     tbody.innerHTML = `
-      <tr><td colspan="6" class="text-muted text-center py-3">Belum ada anggota tim.</td></tr>
+      <tr><td colspan="6" class="text-muted text-center py-3">No team members yet.</td></tr>
     `;
     return;
   }
@@ -161,7 +161,7 @@ function render() {
         <td>${m.tasks ?? 0}</td>
         <td class="text-end">
           <button class="btn btn-outline-danger btn-sm" data-action="hapus" data-id="${m.id}">
-            Hapus
+            Delete
           </button>
         </td>
       </tr>
@@ -191,7 +191,7 @@ async function resetKeDefault() {
   db.run(SCHEMA_SQL);
   await persist();
   render();
-  setStatus('Data direset ke default.');
+  setStatus('Data reset to default.');
 }
 
 function escapeHtml(str) {
