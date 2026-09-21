@@ -1,5 +1,6 @@
 import {
   esc,
+  formatRole,
   getMigrationNotice,
   initDatabase,
   persistDatabase,
@@ -31,10 +32,15 @@ function render() {
     <tr>
       <td data-label="Name"><a class="member-name text-decoration-none" href="profile.html?id=${member.id}">${esc(member.name)}</a></td>
       <td data-label="NIM">${esc(member.nim || '-')}</td>
-      <td data-label="Role">${esc(member.role)}</td>
+      <td data-label="Role">${esc(formatRole(member.role))}</td>
       <td data-label="Status">${member.status === 'Active' ? '<span class="badge text-bg-success">Active</span>' : '<span class="badge text-bg-secondary">Inactive</span>'}</td>
       <td data-label="Tasks">${Number(member.task_count || 0)}</td>
-      <td data-label="Action" class="text-end"><button class="btn btn-outline-danger btn-sm" data-action="hapus" data-id="${member.id}">Delete</button></td>
+      <td data-label="Action" class="text-end">
+        <div class="team-actions d-flex justify-content-end flex-wrap gap-2">
+          <a class="btn btn-outline-primary btn-sm" href="profile.html?id=${member.id}">Profile</a>
+          <button class="btn btn-outline-danger btn-sm" data-action="hapus" data-id="${member.id}">Delete</button>
+        </div>
+      </td>
     </tr>
   `).join('');
 }

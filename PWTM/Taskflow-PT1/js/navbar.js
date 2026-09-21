@@ -1,7 +1,6 @@
 const links = [
   { href: 'index.html', label: 'Team' },
   { href: 'tasks.html', label: 'Tasks' },
-  { href: 'profile.html', label: 'Profile' },
 ];
 
 const here = location.pathname.split('/').pop() || 'index.html';

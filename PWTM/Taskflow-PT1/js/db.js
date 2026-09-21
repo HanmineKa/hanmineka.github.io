@@ -116,3 +116,13 @@ export function esc(value) {
   element.textContent = value ?? '';
   return element.innerHTML;
 }
+
+export function formatRole(role) {
+  const labels = {
+    developer: 'Developer',
+    designer: 'Designer',
+    pm: 'Project Manager',
+    'project-manager': 'Project Manager',
+  };
+  return labels[String(role || '').toLowerCase()] || role || '-';
+}

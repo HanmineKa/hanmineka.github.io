@@ -6,6 +6,7 @@ body { min-height: 100vh; }
 .navbar .nav-link { min-height: 44px; padding-top: .65rem; padding-bottom: .65rem; color: rgba(255, 255, 255, .75); }
 .navbar .nav-link.active { color: #fff; }
 .member-name { overflow-wrap: anywhere; }
+.team-actions { min-width: 150px; }
 .form-control, .form-select { min-height: 44px; }
 .avatar { width: 104px; height: 104px; font-size: 2rem; }
 .stat-card { min-height: 96px; }
@@ -24,7 +25,8 @@ body { min-height: 100vh; }
   .table.table-stack td[data-label="Name"] { font-size: 1.1rem; font-weight: 600; text-align: left; padding-bottom: .5rem; margin-bottom: .25rem; border-bottom: 1px solid var(--bs-border-color); }
   .table.table-stack td[data-label="Name"]::before, .table.table-stack td[data-label="Action"]::before { display: none; }
   .table.table-stack td[data-label="Action"] { padding-top: .75rem; }
-  .table.table-stack td[data-label="Action"] .btn { width: 100%; padding: .5rem; }
+  .table.table-stack td[data-label="Action"] .team-actions { width: 100%; }
+  .table.table-stack td[data-label="Action"] .btn { flex: 1 1 0; padding: .5rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
