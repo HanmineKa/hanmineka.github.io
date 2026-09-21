@@ -1,0 +1,31 @@
+:root {
+    --taskflow-focus-color: #0d6efd;
+}
+
+body {
+    min-height: 100vh;
+}
+
+.taskflow-team-page {
+    background: linear-gradient(135deg, #f8f9ff 0%, #eef4ff 100%);
+}
+
+.taskflow-profile-page {
+    background: linear-gradient(135deg, #f3f6ff 0%, #eefbf7 100%);
+}
+
+:where(a, button, input, select, textarea):focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--taskflow-focus-color) 40%, transparent);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+    }
+}
