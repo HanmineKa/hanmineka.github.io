@@ -1,0 +1,32 @@
+body { min-height: 100vh; }
+
+.taskflow-page { background: linear-gradient(135deg, #f8f9ff 0%, #eef4ff 100%); }
+.taskflow-profile-page { background: linear-gradient(135deg, #f3f6ff 0%, #eefbf7 100%); }
+
+.navbar .nav-link { min-height: 44px; padding-top: .65rem; padding-bottom: .65rem; color: rgba(255, 255, 255, .75); }
+.navbar .nav-link.active { color: #fff; }
+.member-name { overflow-wrap: anywhere; }
+.form-control, .form-select { min-height: 44px; }
+.avatar { width: 104px; height: 104px; font-size: 2rem; }
+.stat-card { min-height: 96px; }
+
+@media (max-width: 767.98px) {
+  .table.table-stack { width: 100%; box-sizing: border-box; }
+  .table.table-stack,
+  .table.table-stack tbody,
+  .table.table-stack tr,
+  .table.table-stack td { display: block; width: 100%; }
+
+  .table.table-stack thead { display: none; }
+  .table.table-stack tr { box-sizing: border-box; border: 1px solid var(--bs-border-color); border-radius: .75rem; padding: .75rem 1rem; margin-bottom: .75rem; background: #fff; }
+  .table.table-stack td { display: flex; justify-content: space-between; align-items: center; gap: 1rem; border: 0; padding: .35rem 0; text-align: right; overflow-wrap: anywhere; }
+  .table.table-stack td::before { content: attr(data-label); flex-shrink: 0; font-weight: 600; color: var(--bs-secondary-color); text-align: left; }
+  .table.table-stack td[data-label="Name"] { font-size: 1.1rem; font-weight: 600; text-align: left; padding-bottom: .5rem; margin-bottom: .25rem; border-bottom: 1px solid var(--bs-border-color); }
+  .table.table-stack td[data-label="Name"]::before, .table.table-stack td[data-label="Action"]::before { display: none; }
+  .table.table-stack td[data-label="Action"] { padding-top: .75rem; }
+  .table.table-stack td[data-label="Action"] .btn { width: 100%; padding: .5rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+}

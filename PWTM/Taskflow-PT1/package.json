@@ -12,5 +12,8 @@
   "type": "commonjs",
   "devDependencies": {
     "sql.js": "^1.14.2"
+  },
+  "dependencies": {
+    "bootstrap": "^5.3.3"
   }
 }
