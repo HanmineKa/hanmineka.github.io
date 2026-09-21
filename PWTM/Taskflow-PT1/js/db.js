@@ -7,7 +7,7 @@ let migrationNotice = '';
 export async function initDatabase() {
   if (db) return db;
   if (typeof window.initSqlJs !== 'function') {
-    throw new Error('sql.js belum tersedia. Pastikan file vendor sudah dimuat.');
+    throw new Error('sql.js is unavailable. Make sure the vendor file has loaded.');
   }
 
   SQL = await window.initSqlJs({ locateFile: (file) => `./js/vendor/${file}` });
@@ -20,7 +20,7 @@ export async function initDatabase() {
 
 async function loadDefaultDatabase() {
   const response = await fetch('./data/default-data.sqlite');
-  if (!response.ok) throw new Error(`Gagal memuat database default: ${response.status}`);
+  if (!response.ok) throw new Error(`Failed to load the default database: ${response.status}`);
   return new SQL.Database(new Uint8Array(await response.arrayBuffer()));
 }
 
@@ -72,7 +72,7 @@ function createLegacyTasks() {
     for (let index = 1; index <= missing; index += 1) {
       db.run('INSERT INTO tasks (title, member_id, status) VALUES (?, ?, ?)', [`Task ${index}`, member.id, 'To do']);
     }
-    if (missing > 0) migrationNotice = 'Task lama dikonversi menjadi data placeholder.';
+    if (missing > 0) migrationNotice = 'Legacy tasks were converted into placeholder data.';
   }
 }
 

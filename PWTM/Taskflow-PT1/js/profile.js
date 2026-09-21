@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await initDatabase();
     const id = new URLSearchParams(location.search).get('id');
     const member = id ? queryOne('SELECT * FROM team_members WHERE id = ?', [Number(id)]) : null;
-    if (!member || !member.id) { content.innerHTML = '<div class="card border-0 shadow-sm"><div class="card-body p-3 p-md-5"><h1 class="h3">Member tidak ditemukan</h1><p class="text-secondary">Pilih member dari halaman Team untuk melihat profil.</p><a class="btn btn-primary" href="index.html">Kembali ke Team</a></div></div>'; return; }
+    if (!member || !member.id) { content.innerHTML = '<div class="card border-0 shadow-sm"><div class="card-body p-3 p-md-5"><h1 class="h3">Member not found</h1><p class="text-secondary">Choose a member from the Team page to view their profile.</p><a class="btn btn-primary" href="index.html">Back to Team</a></div></div>'; return; }
     renderProfile(member);
   } catch (error) { content.innerHTML = `<div class="alert alert-danger">Error: ${esc(error.message)}</div>`; console.error(error); }
 });

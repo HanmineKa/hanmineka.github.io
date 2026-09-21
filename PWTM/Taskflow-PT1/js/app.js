@@ -41,7 +41,7 @@ function render() {
         <div class="team-actions d-flex justify-content-end flex-wrap gap-2">
           <a class="btn btn-outline-primary btn-sm" href="profile.html?id=${member.id}">Profile</a>
           <button class="btn btn-outline-secondary btn-sm" data-action="edit" data-id="${member.id}">Edit</button>
-          <button class="btn btn-outline-danger btn-sm" data-action="hapus" data-id="${member.id}">Delete</button>
+          <button class="btn btn-outline-danger btn-sm" data-action="delete" data-id="${member.id}">Delete</button>
         </div>
       </td>
     </tr>
@@ -126,7 +126,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   document.getElementById('btn-reset')?.addEventListener('click', async () => {
-    if (!confirm('Reset semua data ke default? Perubahan yang tersimpan akan hilang.')) return;
+    if (!confirm('Reset all data to default? All saved changes will be lost.')) return;
     await resetDatabase();
     render();
     document.getElementById('status').textContent = 'Data reset to default.';
