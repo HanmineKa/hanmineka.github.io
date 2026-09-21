@@ -86,6 +86,10 @@ export async function persistDatabase() {
   await saveDbBytes(db.export());
 }
 
+export function exportDatabase() {
+  return db.export();
+}
+
 export function getDatabase() {
   return db;
 }

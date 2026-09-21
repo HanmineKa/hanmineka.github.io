@@ -1,4 +1,4 @@
-import { esc, initDatabase, persistDatabase, queryAll, run } from './db.js';
+import { esc, initDatabase, persistDatabase, queryAll, queryOne, run } from './db.js';
 
 let members = [];
 
@@ -19,7 +19,7 @@ function render() {
   const rows = queryAll(`SELECT t.*, m.name AS member_name FROM tasks t LEFT JOIN team_members m ON m.id = t.member_id ${where} ORDER BY t.due_date IS NULL, t.due_date, t.id`, params);
   const body = document.getElementById('task-table-body');
   body.innerHTML = rows.length ? rows.map((task) => `
-    <tr><td data-label="Title">${esc(task.title)}</td><td data-label="Assignee">${esc(task.member_name || 'Unassigned')}</td><td data-label="Status">${esc(task.status)}</td><td data-label="Due date">${esc(task.due_date || '-')}</td><td data-label="Action" class="text-end"><button class="btn btn-outline-danger btn-sm" data-delete-task="${task.id}">Delete</button></td></tr>
+    <tr><td data-label="Title">${esc(task.title)}</td><td data-label="Assignee">${esc(task.member_name || 'Unassigned')}</td><td data-label="Status">${esc(task.status)}</td><td data-label="Due date">${esc(task.due_date || '-')}</td><td data-label="Action" class="text-end"><button class="btn btn-outline-secondary btn-sm" data-edit-task="${task.id}">Edit</button> <button class="btn btn-outline-danger btn-sm" data-delete-task="${task.id}">Delete</button></td></tr>
   `).join('') : '<tr><td data-label="" class="text-muted text-center py-3">No tasks found.</td></tr>';
 }
 
@@ -36,17 +36,46 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('task-form').addEventListener('submit', async (event) => {
     event.preventDefault();
     const form = event.target;
-    run('INSERT INTO tasks (title, member_id, status, due_date) VALUES (?, ?, ?, ?)', [form.title.value.trim(), form.member.value ? Number(form.member.value) : null, form.status.value, form.due_date.value || null]);
+    const values = [form.title.value.trim(), form.member.value ? Number(form.member.value) : null, form.status.value, form.due_date.value || null];
+    if (form.elements.id.value) {
+      run('UPDATE tasks SET title = ?, member_id = ?, status = ?, due_date = ? WHERE id = ?', [...values, Number(form.elements.id.value)]);
+    } else {
+      run('INSERT INTO tasks (title, member_id, status, due_date) VALUES (?, ?, ?, ?)', values);
+    }
     await persistDatabase();
     form.reset();
+    form.elements.id.value = '';
+    document.getElementById('task-modal-label').textContent = 'Add Task';
+    form.querySelector('[type="submit"]').textContent = 'Add Task';
     bootstrap.Modal.getOrCreateInstance(document.getElementById('task-modal')).hide();
     render();
   });
   document.getElementById('task-table-body').addEventListener('click', async (event) => {
+    const editButton = event.target.closest('[data-edit-task]');
+    if (editButton) {
+      const task = queryOne('SELECT * FROM tasks WHERE id = ?', [Number(editButton.dataset.editTask)]);
+      const form = document.getElementById('task-form');
+      form.elements.id.value = task.id;
+      form.title.value = task.title;
+      form.member.value = task.member_id || '';
+      form.status.value = task.status;
+      form.due_date.value = task.due_date || '';
+      document.getElementById('task-modal-label').textContent = 'Edit Task';
+      form.querySelector('[type="submit"]').textContent = 'Save Changes';
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('task-modal')).show();
+      return;
+    }
     const button = event.target.closest('[data-delete-task]');
     if (!button) return;
     run('DELETE FROM tasks WHERE id = ?', [Number(button.dataset.deleteTask)]);
     await persistDatabase();
     render();
+  });
+  document.querySelector('[data-bs-target="#task-modal"]')?.addEventListener('click', () => {
+    const form = document.getElementById('task-form');
+    form.reset();
+    form.elements.id.value = '';
+    document.getElementById('task-modal-label').textContent = 'Add Task';
+    form.querySelector('[type="submit"]').textContent = 'Add Task';
   });
 });

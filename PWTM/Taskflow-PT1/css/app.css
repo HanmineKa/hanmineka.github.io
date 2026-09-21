@@ -10,8 +10,22 @@ body { min-height: 100vh; }
 .form-control, .form-select { min-height: 44px; }
 .avatar { width: 104px; height: 104px; font-size: 2rem; }
 .stat-card { min-height: 96px; }
+.task-overview { display: flex; align-items: center; gap: 2rem; }
+.task-pie { width: 168px; height: 168px; flex: 0 0 auto; border-radius: 50%; background: conic-gradient(#f4b942 0 var(--todo), #4c9aff var(--todo) var(--doing), #43aa8b var(--doing) 100%); position: relative; }
+.task-pie::after { content: ''; position: absolute; inset: 25%; border-radius: 50%; background: #fff; }
+.task-legend { display: grid; gap: .7rem; min-width: 180px; }
+.task-legend > div { display: grid; grid-template-columns: 12px 1fr auto; align-items: center; gap: .5rem; }
+.legend-swatch { width: 12px; height: 12px; border-radius: 50%; }
+.legend-todo { background: #f4b942; }
+.legend-doing { background: #4c9aff; }
+.legend-done { background: #43aa8b; }
 
 @media (max-width: 767.98px) {
+  .team-summary { flex-wrap: nowrap; white-space: nowrap; }
+  .team-summary p { font-size: .78rem; }
+  .task-overview { gap: 1.25rem; }
+  .task-pie { width: 132px; height: 132px; }
+
   .table.table-stack { width: 100%; box-sizing: border-box; }
   .table.table-stack,
   .table.table-stack tbody,

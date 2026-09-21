@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>TaskFlow Tasks</title>
   <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
-  <link href="../assets/css/bootstrap.min.css" rel="stylesheet">
+  <link href="assets/css/bootstrap.min.css" rel="stylesheet">
   <link href="css/app.css" rel="stylesheet">
 </head>
 <body class="taskflow-page">
@@ -36,6 +36,7 @@
     <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down"><div class="modal-content">
       <div class="modal-header"><h2 class="modal-title h5" id="task-modal-label">Add Task</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
       <div class="modal-body"><form id="task-form" class="row g-3">
+        <input type="hidden" name="id">
         <div class="col-12"><label for="task-title" class="form-label">Title</label><input id="task-title" name="title" class="form-control" required></div>
         <div class="col-md-6"><label for="task-member" class="form-label">Assignee</label><select id="task-member" name="member" class="form-select"></select></div>
         <div class="col-md-6"><label for="task-status" class="form-label">Status</label><select id="task-status" name="status" class="form-select"><option>To do</option><option>Doing</option><option>Done</option></select></div>
@@ -44,7 +45,7 @@
       </form></div>
     </div></div>
   </div>
-  <script src="../assets/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/js/bootstrap.bundle.min.js"></script>
   <script type="module" src="./js/navbar.js"></script>
   <script src="./js/vendor/sql-wasm.js"></script>
   <script type="module" src="./js/tasks.js"></script>
