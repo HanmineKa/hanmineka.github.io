@@ -1,4 +1,5 @@
 const links = [
+  { href: '../../index.html', label: 'Home' },
   { href: 'index.html', label: 'Team' },
   { href: 'tasks.html', label: 'Tasks' },
 ];

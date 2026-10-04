@@ -57,13 +57,20 @@ body::before { content:''; position:fixed; inset:0; z-index:10; pointer-events:n
 .gate-submit { border:1px solid #66584d; padding:10px 22px; color:#f8f2e3; background:#66584d; cursor:pointer; font:10px 'DM Mono',monospace; text-transform:uppercase; letter-spacing:.1em; }
 .gate-submit:hover,.gate-submit:focus-visible { background:#40342d; outline:2px solid #a24f3e; outline-offset:3px; }
 .gate-close { position:absolute; top:17px; right:18px; width:30px; height:30px; border:1px solid #806b5c; border-radius:50%; color:#66584d; background:transparent; cursor:pointer; font-size:19px; line-height:1; }
-.songs { position:absolute; z-index:8; left:0; right:0; bottom:0; height:102px; padding:13px 4.5vw 12px; color:var(--cream); background:rgba(47,26,29,.7); backdrop-filter:blur(8px); border-top:1px solid rgba(255,231,168,.3); }
-.songs-head { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; margin-bottom:10px; font-size:9px; letter-spacing:.16em; text-transform:uppercase; }
+.songs { position:absolute; z-index:8; left:0; right:0; bottom:0; height:102px; padding:13px 4.5vw 12px; overflow:hidden; color:var(--cream); background:rgba(47,26,29,.7); backdrop-filter:blur(8px); border-top:1px solid rgba(255,231,168,.3); }
+.menu-track { display:flex; width:200%; height:100%; transition:transform .5s cubic-bezier(.2,.9,.2,1); }
+.menu-panel { flex:0 0 50%; width:50%; min-width:0; }
+.menu-panel[inert] { visibility:hidden; pointer-events:none; }
+.songs.show-projects .menu-track { transform:translateX(-50%); }
+.songs-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-size:9px; letter-spacing:.16em; text-transform:uppercase; }
 .songs-head span:first-child { display:flex; align-items:center; gap:8px; }
 .songs-head span:first-child::before { content:'♫'; color:var(--gold); font-size:14px; }
-.songs-head span:last-child { justify-self:end; max-width:42%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; opacity:.62; font-size:8px; letter-spacing:.04em; text-transform:none; }
+.songs-tools { display:flex; flex:1; justify-content:flex-end; align-items:center; gap:16px; min-width:0; }
+.songs-tools .song-status { flex:0 1 42%; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; opacity:.62; font-size:8px; letter-spacing:.04em; text-align:right; text-transform:none; }
 .volume-control { display:flex; align-items:center; gap:8px; color:rgba(255,246,223,.72); font-size:13px; letter-spacing:0; text-transform:none; }
 .volume-control input { width:105px; height:3px; accent-color:var(--gold); cursor:pointer; }
+.menu-arrow { display:none; }
+.project-panel .songs-head > span::before { content:'↗'; }
 .bubbles { display:flex; gap:10px; height:48px; }
 .song { position:relative; min-width:0; flex:1; display:flex; flex-direction:column; justify-content:center; border:1px solid rgba(255,245,217,.35); border-radius:999px; padding:7px 14px 7px 32px; color:var(--cream); background:rgba(255,247,220,.08); cursor:pointer; text-align:left; font:9px 'DM Mono',monospace; transition:background .25s,transform .25s,border-color .25s,box-shadow .25s; }
 .song::before { content:attr(data-index); position:absolute; left:12px; top:50%; display:grid; place-items:center; width:13px; height:13px; border:1px solid rgba(255,245,217,.38); border-radius:50%; transform:translateY(-50%); color:rgba(255,246,223,.65); font-size:7px; }
@@ -75,6 +82,9 @@ body::before { content:''; position:fixed; inset:0; z-index:10; pointer-events:n
 .song-progress { position:absolute; left:28px; right:13px; bottom:6px; height:3px; overflow:hidden; border-radius:3px; background:rgba(255,245,217,.28); box-shadow:inset 0 0 0 1px rgba(255,245,217,.12); }
 .song-progress::after { content:''; display:block; width:var(--progress,0%); height:100%; border-radius:inherit; background:var(--gold); box-shadow:0 0 8px rgba(246,199,104,.8); transition:width .25s linear; }
 .song.active .song-progress { background:rgba(255,245,217,.42); }
+.project-button { flex:0 1 230px; max-width:230px; text-decoration:none; }
+.project-status { display:inline-flex; align-items:center; align-self:center; gap:7px; min-height:32px; padding:0 11px; border:1px solid rgba(255,245,217,.28); border-radius:999px; color:rgba(255,246,223,.82); background:rgba(255,247,220,.05); font:8px 'DM Mono',monospace; white-space:nowrap; }
+.project-status i { width:6px; height:6px; border-radius:50%; background:#b7cc79; box-shadow:0 0 8px rgba(183,204,121,.7); }
 .visualizer { position:absolute; z-index:7; left:4.5vw; right:4.5vw; bottom:100px; height:52px; pointer-events:none; opacity:0; transition:opacity .4s; }
 .visualizer.playing { opacity:.9; }
 #wave { width:100%; height:100%; }
@@ -94,6 +104,8 @@ body::before { content:''; position:fixed; inset:0; z-index:10; pointer-events:n
   .page-fragment { width:23%; left:0; }
   .songs { height:100px; padding:12px 4vw 10px; }
   .volume-control input { width:70px; }
+  .songs-tools { gap:8px; }
+  .songs-tools .song-status { flex-basis:40%; }
   .bubbles { gap:5px; }
   .song { padding:6px 9px 6px 25px; }
   .song::before { left:8px; }
@@ -101,6 +113,11 @@ body::before { content:''; position:fixed; inset:0; z-index:10; pointer-events:n
   .song small { font-size:7px; }
   .song-progress { left:22px; right:9px; }
   .visualizer { bottom:108px; left:3vw; right:3vw; }
+}
+@media (min-width:1024px) {
+  .menu-arrow { display:grid; place-items:center; flex:0 0 26px; width:26px; height:26px; border:1px solid rgba(255,245,217,.4); border-radius:50%; color:var(--cream); background:rgba(255,247,220,.08); cursor:pointer; font:12px 'DM Mono',monospace; transition:background .25s,border-color .25s,transform .25s; }
+  .menu-arrow:hover,.menu-arrow:focus-visible { border-color:var(--gold); background:rgba(255,212,116,.22); outline:2px solid var(--gold); outline-offset:2px; transform:translateX(2px); }
+  #song-menu-toggle:hover,#song-menu-toggle:focus-visible { transform:translateX(-2px); }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior:auto !important; transition-duration:.01ms !important; animation-duration:.01ms !important; animation-iteration-count:1 !important; }

@@ -1,5 +1,10 @@
-const songs = document.querySelectorAll('.song');
+const songs = document.querySelectorAll('button.song');
 const audio = document.querySelector('#audio');
+const songsFooter = document.querySelector('.songs');
+const songMenu = document.querySelector('#song-menu');
+const projectMenu = document.querySelector('#project-menu');
+const projectMenuToggle = document.querySelector('#project-menu-toggle');
+const songMenuToggle = document.querySelector('#song-menu-toggle');
 const visualizer = document.querySelector('#visualizer');
 const waveContainer = document.querySelector('#wave');
 const status = document.querySelector('#status');
@@ -499,6 +504,19 @@ document.addEventListener('keydown', (event) => {
   closeViewer();
   if (memoryGate.classList.contains('open')) closeMemoryGate();
 });
+
+const setFooterMenu = (showProjects) => {
+  if (showProjects && !isDesktop()) return;
+  songsFooter.classList.toggle('show-projects', showProjects);
+  songMenu.inert = showProjects;
+  songMenu.setAttribute('aria-hidden', String(showProjects));
+  projectMenu.inert = !showProjects;
+  projectMenu.setAttribute('aria-hidden', String(!showProjects));
+};
+
+projectMenuToggle.addEventListener('click', () => setFooterMenu(true));
+songMenuToggle.addEventListener('click', () => setFooterMenu(false));
+window.addEventListener('resize', () => { if (!isDesktop()) setFooterMenu(false); });
 
 songs.forEach((song) => song.addEventListener('click', async () => {
   if (currentSong === song && !audio.paused) {
