@@ -12,13 +12,49 @@
     <div class="container py-3 py-md-5">
         <div id="app-navbar"></div>
         <header class="mb-4">
-            <h1 class="h2 fw-bold mb-1">Team Members</h1>
+            <h1 class="h2 fw-bold mb-1">Team</h1>
             <div id="status" class="small text-secondary mt-2">Loading team data...</div>
         </header>
 
         <main>
+            <section id="team-dashboard" class="card border-0 shadow-sm mb-4" aria-labelledby="dashboard-title">
+                <div class="card-body p-3 p-md-5">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-4">
+                        <div>
+                            <h2 id="dashboard-title" class="h4 mb-1">Team Dashboard</h2>
+                            <p class="text-secondary mb-0">Overview of members, tasks, deadlines, and recent activity.</p>
+                        </div>
+                        <span id="dashboard-updated" class="small text-secondary"></span>
+                    </div>
+                    <div id="dashboard-stats" class="row row-cols-2 row-cols-md-3 row-cols-xl-6 g-2 mb-4" aria-live="polite"></div>
+                    <div class="row g-4">
+                        <section class="col-lg-4" aria-labelledby="dashboard-task-status-title">
+                            <h3 id="dashboard-task-status-title" class="h6 border-bottom pb-2 mb-2">Task status</h3>
+                            <div class="dashboard-task-overview">
+                                <div id="dashboard-task-chart" class="task-pie dashboard-task-pie" role="img" aria-label="Task status chart"></div>
+                                <div id="dashboard-task-legend" class="task-legend" aria-label="Task status breakdown"></div>
+                            </div>
+                        </section>
+                        <section class="col-lg-4" aria-labelledby="dashboard-deadlines-title">
+                            <div class="d-flex justify-content-between align-items-baseline gap-2 border-bottom pb-2 mb-2">
+                                <h3 id="dashboard-deadlines-title" class="h6 mb-0">Overdue &amp; next 7 days</h3>
+                                <span id="dashboard-deadline-count" class="small text-secondary"></span>
+                            </div>
+                            <div id="dashboard-deadlines"></div>
+                        </section>
+                        <section class="col-lg-4" aria-labelledby="dashboard-activity-title">
+                            <div class="d-flex justify-content-between align-items-baseline gap-2 border-bottom pb-2 mb-2">
+                                <h3 id="dashboard-activity-title" class="h6 mb-0">Recent activity</h3>
+                                <span id="dashboard-activity-count" class="small text-secondary"></span>
+                            </div>
+                            <div id="dashboard-activity"></div>
+                        </section>
+                    </div>
+                </div>
+            </section>
             <section id="team" class="card border-0 shadow-sm mb-4">
                 <div class="card-body p-3 p-md-5">
+                    <h2 class="h4 mb-3">Team Members</h2>
                     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
                         <div>
                             <div class="team-summary d-flex align-items-center gap-2">
@@ -51,11 +87,6 @@
                 </div>
             </section>
 
-            <section class="card border-0 shadow-sm">
-                <div class="card-body p-3 p-md-5">
-                    <p class="mb-0 text-secondary">Data loaded from SQLite and persisted in IndexedDB.</p>
-                </div>
-            </section>
         </main>
 
         <div class="modal fade" id="member-modal" tabindex="-1" aria-labelledby="member-modal-label" aria-hidden="true">

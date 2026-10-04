@@ -10,6 +10,20 @@ body { min-height: 100vh; }
 .form-control, .form-select { min-height: 44px; }
 .avatar { width: 104px; height: 104px; font-size: 2rem; }
 .stat-card { min-height: 96px; }
+.dashboard-stat { min-height: 92px; }
+.dashboard-list .list-group-item:last-child { border-bottom: 0; }
+.dashboard-list .min-w-0 { min-width: 0; }
+.dashboard-list strong { overflow-wrap: anywhere; }
+.dashboard-task-overview { display: flex; align-items: center; gap: 1rem; }
+.dashboard-task-overview .task-legend { flex: 1; min-width: 0; }
+.dashboard-task-pie { width: 128px; height: 128px; flex: 0 0 128px; }
+.task-progress-summary .progress { background: #e9ecef; }
+.task-member-picker .dropdown-menu { max-height: 15rem; overflow-y: auto; }
+.task-member-option + label { cursor: pointer; }
+.task-assignee-chip { display: inline-flex; align-items: center; gap: .5rem; padding: .45rem .55rem .45rem .75rem; font-weight: 500; }
+.task-assignee-chip .btn-close { width: .55rem; height: .55rem; padding: .15rem; }
+.profile-task-list .list-group-item:last-child { border-bottom: 0; }
+.profile-task-title { overflow-wrap: anywhere; }
 .task-overview { display: flex; align-items: center; gap: 2rem; }
 .task-pie { width: 168px; height: 168px; flex: 0 0 auto; border-radius: 50%; background: conic-gradient(#f4b942 0 var(--todo), #4c9aff var(--todo) var(--doing), #43aa8b var(--doing) 100%); position: relative; }
 .task-pie::after { content: ''; position: absolute; inset: 25%; border-radius: 50%; background: #fff; }
@@ -23,8 +37,12 @@ body { min-height: 100vh; }
 @media (max-width: 767.98px) {
   .team-summary { flex-wrap: nowrap; white-space: nowrap; }
   .team-summary p { font-size: .78rem; }
-  .task-overview { gap: 1.25rem; }
+  .task-overview { flex-wrap: wrap; gap: 1.25rem; }
   .task-pie { width: 132px; height: 132px; }
+  .task-legend { flex: 1 1 120px; min-width: 0; }
+  .dashboard-task-overview { flex-wrap: wrap; }
+  .dashboard-task-overview .dashboard-task-pie { width: 120px; height: 120px; flex-basis: 120px; }
+  .dashboard-task-overview .task-legend { flex: 1 1 120px; }
 
   .table.table-stack { width: 100%; box-sizing: border-box; }
   .table.table-stack,

@@ -47,14 +47,34 @@ function migrateDatabase() {
     title TEXT NOT NULL,
     member_id INTEGER REFERENCES team_members(id) ON DELETE SET NULL,
     status TEXT NOT NULL DEFAULT 'To do',
-    due_date TEXT
+    due_date TEXT,
+    description TEXT
   )`);
+  const taskColumns = db.exec('PRAGMA table_info(tasks)')[0]?.values || [];
+  if (!taskColumns.some((column) => column[1] === 'description')) {
+    db.run('ALTER TABLE tasks ADD COLUMN description TEXT');
+  }
+  db.run(`CREATE TABLE IF NOT EXISTS task_assignments (
+    task_id INTEGER NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+    member_id INTEGER NOT NULL REFERENCES team_members(id) ON DELETE CASCADE,
+    PRIMARY KEY (task_id, member_id)
+  )`);
+  db.run('CREATE INDEX IF NOT EXISTS idx_task_assignments_member_id ON task_assignments(member_id)');
+  db.run(`CREATE TABLE IF NOT EXISTS activity_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    description TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  )`);
+  db.run(`INSERT OR IGNORE INTO task_assignments (task_id, member_id)
+    SELECT id, member_id FROM tasks WHERE member_id IS NOT NULL`);
 
   const version = Number(db.exec('PRAGMA user_version')[0]?.values[0]?.[0] || 0);
   if (version < 2) {
     createLegacyTasks();
     db.run('PRAGMA user_version = 2');
   }
+  if (version < 3) db.run('PRAGMA user_version = 3');
+  if (version < 4) db.run('PRAGMA user_version = 4');
 }
 
 function ensureColumn(name, definition) {
@@ -109,6 +129,10 @@ export function queryOne(sql, params = []) {
 
 export function run(sql, params = []) {
   db.run(sql, params);
+}
+
+export function logActivity(description) {
+  run('INSERT INTO activity_log (description) VALUES (?)', [description]);
 }
 
 export function getMigrationNotice() {
