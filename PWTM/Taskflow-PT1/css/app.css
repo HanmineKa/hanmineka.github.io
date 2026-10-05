@@ -33,6 +33,9 @@ body { min-height: 100vh; }
 .legend-todo { background: #f4b942; }
 .legend-doing { background: #4c9aff; }
 .legend-done { background: #43aa8b; }
+.auth-shell { max-width: 30rem; }
+.auth-page .navbar-brand { color: var(--bs-primary); text-decoration: none; }
+.auth-page .navbar-brand:hover { color: var(--bs-primary-text-emphasis); }
 
 @media (max-width: 767.98px) {
   .team-summary { flex-wrap: nowrap; white-space: nowrap; }

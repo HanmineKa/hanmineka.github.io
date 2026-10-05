@@ -1,3 +1,4 @@
+import { requireAuth } from './auth.js';
 import { esc, formatRole, initDatabase, queryAll, queryOne } from './db.js';
 
 function initials(name) { return String(name || '?').split(/\s+/).map((part) => part[0]).slice(0, 2).join('').toUpperCase(); }
@@ -57,6 +58,7 @@ function renderProfile(member) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  if (!requireAuth()) return;
   const content = document.getElementById('profile-content');
   try {
     await initDatabase();

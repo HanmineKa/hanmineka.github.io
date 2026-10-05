@@ -1,3 +1,5 @@
+import { logout } from './auth.js';
+
 const links = [
   { href: '../../index.html', label: 'Home' },
   { href: 'index.html', label: 'Team' },
@@ -24,6 +26,8 @@ if (navbar) {
             </li>
           `).join('')}
         </ul>
+        <button class="btn btn-outline-light btn-sm ms-md-3 mt-2 mt-md-0" id="logout-button" type="button" aria-label="Log out">Log Out</button>
       </div>
     </nav>`;
+  navbar.querySelector('#logout-button')?.addEventListener('click', logout);
 }

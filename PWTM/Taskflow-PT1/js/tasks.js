@@ -1,3 +1,4 @@
+import { requireAuth } from './auth.js';
 import { esc, initDatabase, logActivity, persistDatabase, queryAll, queryOne, run } from './db.js';
 
 let members = [];
@@ -116,6 +117,7 @@ function render() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  if (!requireAuth()) return;
   try {
     await initDatabase();
     members = queryAll('SELECT id, name FROM team_members ORDER BY name');

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Log In | TaskFlow</title>
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link href="assets/css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/app.css" rel="stylesheet">
+</head>
+<body class="taskflow-page auth-page">
+  <main class="container py-4 py-md-5">
+    <div class="auth-shell mx-auto">
+      <a class="navbar-brand d-inline-flex align-items-center gap-2 fw-bold mb-4" href="login.html">
+        <img src="assets/logo.svg" alt="" width="32" height="32"> TaskFlow
+      </a>
+      <section class="card border-0 shadow-sm">
+        <div class="card-body p-4 p-md-5">
+          <h1 class="h3 fw-bold mb-1">Welcome back</h1>
+          <p class="text-secondary mb-4">Log in to your TaskFlow account.</p>
+          <form id="auth-form" data-auth-mode="login" novalidate>
+            <div class="mb-3">
+              <label for="auth-email" class="form-label">Email</label>
+              <input id="auth-email" name="email" type="email" class="form-control" autocomplete="email" required>
+            </div>
+            <div class="mb-3">
+              <label for="auth-password" class="form-label">Password</label>
+              <input id="auth-password" name="password" type="password" class="form-control" autocomplete="current-password" required>
+            </div>
+            <p id="auth-message" class="small mb-3" role="alert" aria-live="polite"></p>
+            <button class="btn btn-primary w-100" type="submit">Log In</button>
+          </form>
+          <p class="mt-4 mb-0 text-center">New to TaskFlow? <a href="register.html">Create an account</a></p>
+        </div>
+      </section>
+      <p class="small text-secondary mt-3 mb-0">Demo access only. Accounts are stored in this browser; this does not secure shared data.</p>
+    </div>
+  </main>
+  <script type="module" src="./js/auth-page.js"></script>
+</body>
+</html>

@@ -1,3 +1,4 @@
+import { requireAuth } from './auth.js';
 import {
   esc,
   exportDatabase,
@@ -178,6 +179,7 @@ function downloadDatabase() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  if (!requireAuth()) return;
   try {
     await initDatabase();
     render();
