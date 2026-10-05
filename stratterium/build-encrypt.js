@@ -26,7 +26,8 @@ function readFileB64(relPath) {
 }
 
 function readFileText(relPath) {
-  return fs.readFileSync(path.join(SPESIAL_DIR, relPath), 'utf8');
+  const text = fs.readFileSync(path.join(SPESIAL_DIR, relPath), 'utf8');
+  return relPath.endsWith('.html') ? text.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, '') : text;
 }
 
 // prompt password dengan karakter yang diketik disamarkan jadi "*"
